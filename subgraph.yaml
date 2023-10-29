@@ -74,9 +74,9 @@ dataSources:
     name: PrimaryIssuePoolFactory
     network: goerli
     source:
-      address: '0x588b63ca44F637C1Ffa9C70c512363C7BE6A1072'
+      address: '0x4823be69546f9e1Ab8a87f315108c19dDC8E48b4'
       abi: PrimaryIssuePoolFactory
-      startBlock: 9121129
+      startBlock: 8586768
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -161,9 +161,9 @@ dataSources:
     name: MarginTradingPoolFactory
     network: goerli
     source:
-      address: '0x2E98aa5C69ef93dAc5305dFAd3dDFba5e29d8387'
+      address: '0x4133189077C15278e893473c311D4DC5FCdDCb43'
       abi: MarginTradingPoolFactory
-      startBlock: 8853121
+      startBlock: 9952072
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -547,7 +547,7 @@ templates:
           handler: handleTransfer
         - event: SwapFeePercentageChanged(uint256)
           handler: handleSwapFeePercentageChange
-        - event: OpenIssue(indexed address,uint256,uint256,address,uint256,uint256,string,address)
+        - event: OpenIssue(indexed address,uint256,uint256,address,uint256,uint256,string)
           handler: handleOpenIssue
         - event: Subscription(indexed address,address,uint256,address,uint256,uint256)
           handler: handleSubscription
