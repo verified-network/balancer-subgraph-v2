@@ -161,9 +161,9 @@ dataSources:
     name: MarginTradingPoolFactory
     network: goerli
     source:
-      address: '0x4133189077C15278e893473c311D4DC5FCdDCb43'
+      address: '0x435f26ca4EF4709C4BB46a53424DAA2cD4D0e899'
       abi: MarginTradingPoolFactory
-      startBlock: 9952072
+      startBlock: 9982813
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
