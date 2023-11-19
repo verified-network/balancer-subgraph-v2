@@ -133,6 +133,7 @@ type Pool @entity {
   margin: BigInt
   collateral: BigInt
   cficode: Bytes
+  marginOrders: [MarginOrders!]@derivedFrom(field: "pool")
 }
 
 type PrimaryIssues @entity {
