@@ -123,8 +123,8 @@ goerli:
     address: "0xCFE47c774245Ef9EE6Ed0d7C58219fFd7BB60852"
     startBlock: 8853132
   MarginTradingPoolFactory:
-    address: "0x84766CE538613bb5f3a6E6bCe0Ed1dB650545208"
-    startBlock: 10173430
+    address: "0xF031225Bef783188ef343E7703f9591394331a4d"
+    startBlock: 10425922
 #  StablePoolFactory:
 #    address: "0x44afeb87c871D8fEA9398a026DeA2BD3A13F5769"
 #    startBlock: 6992992
