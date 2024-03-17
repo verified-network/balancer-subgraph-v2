@@ -16,14 +16,15 @@ import {
   SecondaryTrades,
   SecondaryOrders,
   MarginOrders,
+  FXOracle,
 } from '../../types/schema';
 import { PrimaryIssuePool } from '../../types/templates';
 import { SecondaryIssuePool } from '../../types/templates';
 import { ERC20 } from '../../types/Vault/ERC20';
 import { WeightedPool } from '../../types/Vault/WeightedPool';
-import { Swap as SwapEvent } from '../../types/Vault/Vault';
-import { ONE_BD, SWAP_IN, SWAP_OUT, ZERO, ZERO_BD } from './constants';
-import { getPoolAddress, isComposableStablePool } from './pools';
+import { Swap as SwapEvent, Vault } from '../../types/Vault/Vault';
+import { ONE_BD, SWAP_IN, SWAP_OUT, VAULT_ADDRESS, ZERO, ZERO_ADDRESS, ZERO_BD } from './constants';
+import { PoolType, getPoolAddress, isComposableStablePool } from './pools';
 import { ComposableStablePool } from '../../types/ComposableStablePoolFactory/ComposableStablePool';
 import { valueInUSD } from '../pricing';
 
@@ -35,6 +36,28 @@ export function bytesToAddress(address: Bytes): Address {
 
 export function stringToBytes(str: string): Bytes {
   return Bytes.fromByteArray(Bytes.fromHexString(str));
+}
+
+export function hexToBigInt(hex: string): BigInt {
+  let hexUpper = hex.toUpperCase();
+  let bigInt = BigInt.fromI32(0);
+  let power = BigInt.fromI32(1);
+
+  for (let i = hex.length - 1; i >= 0; i--) {
+    let char = hexUpper.charCodeAt(i);
+    let value = 0;
+
+    if (char >= 48 && char <= 57) {
+      value = char - 48;
+    } else if (char >= 65 && char <= 70) {
+      value = char - 55;
+    }
+
+    bigInt = bigInt.plus(BigInt.fromI32(value).times(power));
+    power = power.times(BigInt.fromI32(16));
+  }
+
+  return bigInt;
 }
 
 export function getTokenDecimals(tokenAddress: Address): i32 {
@@ -53,6 +76,15 @@ export function tokenToDecimal(amount: BigInt, decimals: i32): BigDecimal {
 
 export function scaleDown(num: BigInt, decimals: i32): BigDecimal {
   return num.divDecimal(BigInt.fromI32(10).pow(u8(decimals)).toBigDecimal());
+}
+
+export function scaleUp(num: BigDecimal, decimals: i32): BigInt {
+  return BigInt.fromString(
+    num
+      .truncate(decimals)
+      .times(BigInt.fromI32(10).pow(u8(decimals)).toBigDecimal())
+      .toString()
+  );
 }
 
 export function getPoolShareId(poolControllerAddress: Address, lpAddress: Address): string {
@@ -90,7 +122,9 @@ export function newPoolEntity(poolId: string): Pool {
   pool.totalWeight = ZERO_BD;
   pool.totalSwapVolume = ZERO_BD;
   pool.totalSwapFee = ZERO_BD;
+  pool.totalProtocolFee = ZERO_BD;
   pool.totalLiquidity = ZERO_BD;
+  pool.totalLiquiditySansBPT = ZERO_BD;
   pool.totalShares = ZERO_BD;
   pool.swapsCount = BigInt.fromI32(0);
   pool.holdersCount = BigInt.fromI32(0);
@@ -155,9 +189,11 @@ export function createPoolTokenEntity(
   poolToken.symbol = symbol;
   poolToken.decimals = decimals;
   poolToken.balance = ZERO_BD;
+  poolToken.paidProtocolFees = ZERO_BD;
   poolToken.cashBalance = ZERO_BD;
   poolToken.managedBalance = ZERO_BD;
   poolToken.priceRate = ONE_BD;
+  poolToken.oldPriceRate = ONE_BD;
   poolToken.token = _token.id;
   poolToken.index = tokenIndex;
 
@@ -168,6 +204,16 @@ export function createPoolTokenEntity(
 
     if (!isTokenExemptCall.reverted) {
       poolToken.isExemptFromYieldProtocolFee = isTokenExemptCall.value;
+    }
+  } else if (pool.poolType == PoolType.Weighted && pool.poolTypeVersion == 4) {
+    let poolAddress = bytesToAddress(pool.address);
+    // ComposableStable ABI has the same getRateProviders function as WeightedV4
+    let poolContract = ComposableStablePool.bind(poolAddress);
+    let rateProvidersCall = poolContract.try_getRateProviders();
+
+    // check array length to avoid out of bounds error if call doesn't revert but returns empty array
+    if (!rateProvidersCall.reverted && rateProvidersCall.value.length > tokenIndex) {
+      poolToken.isExemptFromYieldProtocolFee = rateProvidersCall.value[tokenIndex] == ZERO_ADDRESS;
     }
   }
 
@@ -239,6 +285,7 @@ export function createPoolSnapshot(pool: Pool, timestamp: i32): void {
   snapshot.swapVolume = pool.totalSwapVolume;
   snapshot.swapFees = pool.totalSwapFee;
   snapshot.liquidity = pool.totalLiquidity;
+  snapshot.protocolFee = pool.totalProtocolFee;
   snapshot.swapsCount = pool.swapsCount;
   snapshot.holdersCount = pool.holdersCount;
   snapshot.timestamp = dayTimestamp;
@@ -417,10 +464,39 @@ export function getBalancerSnapshot(vaultId: string, timestamp: i32): BalancerSn
     snapshot.totalSwapFee = vault.totalSwapFee;
     snapshot.totalSwapVolume = vault.totalSwapVolume;
     snapshot.totalSwapCount = vault.totalSwapCount;
+    snapshot.totalProtocolFee = vault.totalProtocolFee;
     snapshot.vault = vaultId;
     snapshot.timestamp = dayStartTimestamp;
     snapshot.save();
   }
 
   return snapshot;
+}
+
+export function computeCuratedSwapEnabled(
+  isPaused: boolean,
+  swapEnabledCurationSignal: boolean,
+  internalSwapEnabled: boolean
+): boolean {
+  if (isPaused) return false;
+  if (swapEnabledCurationSignal == null) return internalSwapEnabled;
+  return swapEnabledCurationSignal && internalSwapEnabled;
+}
+
+export function getProtocolFeeCollector(): Address | null {
+  let vaultContract = Vault.bind(VAULT_ADDRESS);
+  let feesCollector = vaultContract.try_getProtocolFeesCollector();
+  if (feesCollector.reverted) return null;
+
+  return feesCollector.value;
+}
+
+export function getFXOracle(oracleAddress: Address): FXOracle {
+  let oracle = FXOracle.load(oracleAddress.toHexString());
+  if (oracle == null) {
+    oracle = new FXOracle(oracleAddress.toHexString());
+    oracle.tokens = [];
+    oracle.save();
+  }
+  return oracle;
 }

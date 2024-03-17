@@ -13,11 +13,13 @@ export namespace PoolType {
   export const Element = 'Element';
   export const LiquidityBootstrapping = 'LiquidityBootstrapping';
   export const Investment = 'Investment';
+  export const Managed = 'Managed';
+  export const KassandraManaged = 'KassandraManaged';
   export const StablePhantom = 'StablePhantom';
   export const ComposableStable = 'ComposableStable';
   export const HighAmpComposableStable = 'HighAmpComposableStable';
   export const AaveLinear = 'AaveLinear';
-  export const BeefyLinear = 'BeefyLinear';
+  export const BooLinear = 'BooLinear';
   export const ERC4626Linear = 'ERC4626Linear';
   export const PrimaryIssue = 'PrimaryIssue';
   export const SecondaryIssue = 'SecondaryIssue';
@@ -28,7 +30,7 @@ export namespace PoolType {
   export const MidasLinear = 'MidasLinear';
   export const ReaperLinear = 'ReaperLinear';
   export const SiloLinear = 'SiloLinear';
-  export const TetuLinear = 'TetuLinear';
+  export const TarotLinear = 'TarotLinear';
   export const YearnLinear = 'YearnLinear';
   export const Gyro2 = 'Gyro2';
   export const Gyro3 = 'Gyro3';
@@ -36,25 +38,58 @@ export namespace PoolType {
   export const FX = 'FX';
 }
 
+export const poolTypes = [
+  PoolType.Weighted,
+  PoolType.Stable,
+  PoolType.MetaStable,
+  PoolType.Element,
+  PoolType.LiquidityBootstrapping,
+  PoolType.Investment,
+  PoolType.Managed,
+  PoolType.KassandraManaged,
+  PoolType.StablePhantom,
+  PoolType.ComposableStable,
+  PoolType.HighAmpComposableStable,
+  PoolType.AaveLinear,
+  PoolType.ERC4626Linear,
+  PoolType.EulerLinear,
+  PoolType.GearboxLinear,
+  PoolType.MidasLinear,
+  PoolType.ReaperLinear,
+  PoolType.SiloLinear,
+  PoolType.YearnLinear,
+  PoolType.Gyro2,
+  PoolType.Gyro3,
+  PoolType.GyroE,
+  PoolType.FX,
+];
+
 export function isVariableWeightPool(pool: Pool): boolean {
-  return pool.poolType == PoolType.LiquidityBootstrapping || pool.poolType == PoolType.Investment;
+  return (
+    pool.poolType == PoolType.LiquidityBootstrapping ||
+    pool.poolType == PoolType.Investment ||
+    pool.poolType == PoolType.Managed
+  );
 }
 
 export function hasVirtualSupply(pool: Pool): boolean {
   return (
     pool.poolType == PoolType.AaveLinear ||
-    pool.poolType == PoolType.BeefyLinear ||
     pool.poolType == PoolType.ERC4626Linear ||
     pool.poolType == PoolType.EulerLinear ||
     pool.poolType == PoolType.GearboxLinear ||
     pool.poolType == PoolType.MidasLinear ||
     pool.poolType == PoolType.ReaperLinear ||
     pool.poolType == PoolType.SiloLinear ||
-    pool.poolType == PoolType.TetuLinear ||
     pool.poolType == PoolType.YearnLinear ||
     pool.poolType == PoolType.StablePhantom ||
-    isComposableStablePool(pool)
+    isComposableStablePool(pool) ||
+    isManagedPool(pool)
   );
+}
+
+export function isManagedPool(pool: Pool): boolean {
+  return pool.poolType == PoolType.Managed || pool.poolType == PoolType.KassandraManaged;
 }
 
 export function isComposableStablePool(pool: Pool): boolean {
@@ -64,14 +99,12 @@ export function isComposableStablePool(pool: Pool): boolean {
 export function isLinearPool(pool: Pool): boolean {
   return (
     pool.poolType == PoolType.AaveLinear ||
-    pool.poolType == PoolType.BeefyLinear ||
     pool.poolType == PoolType.ERC4626Linear ||
     pool.poolType == PoolType.EulerLinear ||
     pool.poolType == PoolType.GearboxLinear ||
     pool.poolType == PoolType.MidasLinear ||
     pool.poolType == PoolType.ReaperLinear ||
     pool.poolType == PoolType.SiloLinear ||
-    pool.poolType == PoolType.TetuLinear ||
     pool.poolType == PoolType.YearnLinear
   );
 }

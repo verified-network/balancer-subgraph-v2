@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.4
 description: The Verified Vault manages wallet balances in liquidity pools for security tokens.
 #
 repository: https://github.com/balancer-labs/balancer-subgraph-v2
@@ -6,35 +6,15 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: EventEmitter
-    network: goerli
-    source:
-      address: '0x4bcFCEDF1114030ff85a647dD436B7b3dEb45d9E'
-      abi: EventEmitter
-      startBlock: 8305794
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.5
-      language: wasm/assemblyscript
-      file: ./src/mappings/eventEmitter.ts
-      entities:
-        - Pool
-      abis:
-        - name: EventEmitter
-          file: ./abis/EventEmitter.json
-      eventHandlers:
-        - event: LogArgument(indexed address,indexed bytes32,bytes,uint256)
-          handler: handleLogArgument
-  - kind: ethereum/contract
     name: Vault
-    network: goerli
+    network: sepolia
     source:
       address: '0xBA12222222228d8Ba445958a75a0704d566BF2C8'
       abi: Vault
-      startBlock: 4648099
+      startBlock: 3418831
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/vault.ts
       entities:
@@ -59,6 +39,8 @@ dataSources:
           file: ./abis/StablePool.json
         - name: WeightedPoolFactory
           file: ./abis/WeightedPoolFactory.json
+        - name: AaveLinearPool
+          file: ./abis/AaveLinearPool.json
         - name: FXPool
           file: ./abis/FXPool.json
       eventHandlers:
@@ -72,14 +54,14 @@ dataSources:
           handler: handleInternalBalanceChange
   - kind: ethereum/contract
     name: PrimaryIssuePoolFactory
-    network: goerli
+    network: sepolia
     source:
-      address: '0x4823be69546f9e1Ab8a87f315108c19dDC8E48b4'
+      address: '0xDA13BC71FEe08FfD523f10458B0e2c2D8427BBD5'
       abi: PrimaryIssuePoolFactory
-      startBlock: 8586768
+      startBlock: 5492879
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolFactory.ts
       entities:
@@ -101,14 +83,14 @@ dataSources:
           handler: handleNewPrimaryPool
   - kind: ethereum/contract
     name: SecondaryIssuePoolFactory
-    network: goerli
+    network: sepolia
     source:
-      address: '0xe3e79e4106327e6eAeFBD03C1fD3A4A531c59b10'
+      address: '0xe5459436AE26C4fDC77f51c459e9Aa08b5d32064'
       abi: SecondaryIssuePoolFactory
-      startBlock: 9012992
+      startBlock: 5492881
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolFactory.ts
       entities:
@@ -129,44 +111,15 @@ dataSources:
         - event: PoolCreated(indexed address)
           handler: handleNewSecondaryPool          
   - kind: ethereum/contract
-    name: OffchainSecondariesPoolFactory
-    network: goerli
-    source:
-      address: '0xCFE47c774245Ef9EE6Ed0d7C58219fFd7BB60852'
-      abi: OffchainSecondariesPoolFactory
-      startBlock: 8853132
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.5
-      language: wasm/assemblyscript
-      file: ./src/mappings/poolFactory.ts
-      entities:
-        - Balancer
-        - Pool
-      abis:
-        - name: Vault
-          file: ./abis/Vault.json
-        - name: ERC20
-          file: ./abis/ERC20.json
-        - name: WeightedPool
-          file: ./abis/WeightedPool.json
-        - name: OffchainSecondariesPoolFactory
-          file: ./abis/OffchainSecondariesPoolFactory.json
-        - name: OffchainSecondariesPool
-          file: ./abis/OffchainSecondariesPool.json
-      eventHandlers:
-        - event: PoolCreated(indexed address)
-          handler: handleNewOffchainSecondaryPool          
-  - kind: ethereum/contract
     name: MarginTradingPoolFactory
-    network: goerli
+    network: sepolia
     source:
-      address: '0xB59DDb2b9e593cFDb9D3820889809cCFFD00EAf8'
+      address: '0xB1ae3Fc5B16d3736bf0db20606fB9a10b435392c'
       abi: MarginTradingPoolFactory
-      startBlock: 10447153
+      startBlock: 5492908
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolFactory.ts
       entities:
@@ -189,12 +142,12 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: WeightedPool
-    network: goerli
+    network: sepolia
     source:
       abi: WeightedPool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -205,6 +158,8 @@ templates:
       abis:
         - name: WeightedPool
           file: ./abis/WeightedPool.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -214,12 +169,12 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: WeightedPoolV2
-    network: goerli
+    network: sepolia
     source:
       abi: WeightedPoolV2
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -230,6 +185,8 @@ templates:
       abis:
         - name: WeightedPoolV2
           file: ./abis/WeightedPoolV2.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -243,12 +200,12 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: WeightedPool2Tokens
-    network: goerli
+    network: sepolia
     source:
       abi: WeightedPool2Tokens
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -259,6 +216,8 @@ templates:
       abis:
         - name: WeightedPool2Tokens
           file: ./abis/WeightedPool2Tokens.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -270,12 +229,12 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: StablePool
-    network: goerli
+    network: sepolia
     source:
       abi: StablePool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -286,6 +245,8 @@ templates:
       abis:
         - name: StablePool
           file: ./abis/StablePool.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -299,12 +260,12 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: MetaStablePool
-    network: goerli
+    network: sepolia
     source:
       abi: MetaStablePool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -318,6 +279,8 @@ templates:
           file: ./abis/MetaStablePool.json
         - name: StablePool
           file: ./abis/StablePool.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -337,12 +300,12 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: ConvergentCurvePool
-    network: goerli
+    network: sepolia
     source:
       abi: ConvergentCurvePool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -353,17 +316,19 @@ templates:
       abis:
         - name: ConvergentCurvePool
           file: ./abis/ConvergentCurvePool.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
   - kind: ethereum/contract
     name: LiquidityBootstrappingPool
-    network: goerli
+    network: sepolia
     source:
       abi: LiquidityBootstrappingPool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -375,6 +340,8 @@ templates:
       abis:
         - name: LiquidityBootstrappingPool
           file: ./abis/LiquidityBootstrappingPool.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -388,12 +355,12 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: InvestmentPool
-    network: goerli
+    network: sepolia
     source:
       abi: InvestmentPool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -405,6 +372,8 @@ templates:
       abis:
         - name: InvestmentPool
           file: ./abis/InvestmentPool.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -419,13 +388,69 @@ templates:
         - event: PausedStateChanged(bool)
           handler: handlePausedStateChanged
   - kind: ethereum/contract
+    name: ManagedPool
+    network: sepolia
+    source:
+      abi: ManagedPool
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./src/mappings/poolController.ts
+      entities:
+        - Pool
+        - PoolShare
+        - Swap
+        - PoolToken
+        - GradualWeightUpdate
+      abis:
+        - name: WeightedPool
+          file: ./abis/WeightedPool.json
+        - name: WeightedPoolV2
+          file: ./abis/WeightedPoolV2.json
+        - name: ManagedPool
+          file: ./abis/ManagedPoolV2.json
+        - name: Vault
+          file: ./abis/Vault.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+        - event: SwapEnabledSet(bool)
+          handler: handleSwapEnabledSet
+        - event: PausedStateChanged(bool)
+          handler: handlePausedStateChanged
+        - event: JoinExitEnabledSet(bool)
+          handler: handleJoinExitEnabledSet
+        - event: MustAllowlistLPsSet(bool)
+          handler: handleMustAllowlistLPsSet
+        - event: RecoveryModeStateChanged(bool)
+          handler: handleRecoveryModeStateChanged
+        - event: CircuitBreakerSet(indexed address,uint256,uint256,uint256)
+          handler: handleCircuitBreakerSet
+        - event: TokenAdded(indexed address,uint256)
+          handler: handleTokenAdded
+        - event: TokenRemoved(indexed address)
+          handler: handleTokenRemoved
+        - event: ManagementAumFeeCollected(uint256)
+          handler: handleManagementAumFeeCollected
+        - event: GradualSwapFeeUpdateScheduled(uint256,uint256,uint256,uint256)
+          handler: handleGradualSwapFeeUpdateScheduled
+        - event: GradualWeightUpdateScheduled(uint256,uint256,uint256[],uint256[])
+          handler: handleGradualWeightUpdateScheduled
+        - event: ManagementAumFeePercentageChanged(uint256)
+          handler: handleManagementAumFeePercentageChanged
+        - event: ProtocolFeePercentageCacheUpdated(bytes32)
+          handler: handleEncodedProtocolFeePercentageCacheUpdated
+  - kind: ethereum/contract
     name: StablePhantomPool
-    network: goerli
+    network: sepolia
     source:
       abi: StablePhantomPool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -439,6 +464,8 @@ templates:
           file: ./abis/StablePhantomPool.json
         - name: StablePool
           file: ./abis/StablePool.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -456,12 +483,12 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: StablePhantomPoolV2
-    network: goerli
+    network: sepolia
     source:
       abi: ComposableStablePool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -475,6 +502,10 @@ templates:
           file: ./abis/ComposableStablePool.json
         - name: StablePool
           file: ./abis/StablePool.json
+        - name: WeightedPoolV2
+          file: ./abis/WeightedPoolV2.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -496,12 +527,12 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: LinearPool
-    network: goerli
+    network: sepolia
     source:
       abi: LinearPool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -513,6 +544,10 @@ templates:
       abis:
         - name: LinearPool
           file: ./abis/LinearPool.json
+        - name: WeightedPoolV2
+          file: ./abis/WeightedPoolV2.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -520,16 +555,18 @@ templates:
           handler: handleSwapFeePercentageChange
         - event: TargetsSet(indexed address,uint256,uint256)
           handler: handleTargetsSet
+        - event: RecoveryModeStateChanged(bool)
+          handler: handleRecoveryModeStateChanged
         - event: PausedStateChanged(bool)
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: PrimaryIssuePool
-    network: goerli
+    network: sepolia
     source:
       abi: PrimaryIssuePool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -547,18 +584,18 @@ templates:
           handler: handleTransfer
         - event: SwapFeePercentageChanged(uint256)
           handler: handleSwapFeePercentageChange
-        - event: OpenIssue(indexed address,uint256,uint256,address,uint256,uint256,string)
+        - event: OpenIssue(indexed address,uint256,uint256,address,uint256,uint256,string,address)
           handler: handleOpenIssue
         - event: Subscription(indexed address,address,uint256,address,uint256,uint256)
           handler: handleSubscription
   - kind: ethereum/contract
     name: SecondaryIssuePool
-    network: goerli
+    network: sepolia
     source:
       abi: SecondaryIssuePool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -584,12 +621,12 @@ templates:
           handler: handleOrderBook
   - kind: ethereum/contract
     name: OffchainSecondariesPool
-    network: goerli
+    network: sepolia
     source:
       abi: OffchainSecondariesPool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -615,12 +652,12 @@ templates:
           handler: handleOffchainOrderBook
   - kind: ethereum/contract
     name: MarginTradingPool
-    network: goerli
+    network: sepolia
     source:
       abi: MarginTradingPool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -646,12 +683,12 @@ templates:
           handler: handleMarginOrderBook
   - kind: ethereum/contract
     name: Gyro2Pool
-    network: goerli
+    network: sepolia
     source:
-      abi: Gyro2Pool
+      abi: Gyro2V2Pool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -661,8 +698,10 @@ templates:
         - PoolToken
         - GradualWeightUpdate
       abis:
-        - name: Gyro2Pool
-          file: ./abis/Gyro2Pool.json
+        - name: Gyro2V2Pool
+          file: ./abis/Gyro2V2Pool.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -674,12 +713,12 @@ templates:
           handler: handleUnpauseGyroPool
   - kind: ethereum/contract
     name: Gyro3Pool
-    network: goerli
+    network: sepolia
     source:
       abi: Gyro3Pool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -691,6 +730,8 @@ templates:
       abis:
         - name: Gyro3Pool
           file: ./abis/Gyro3Pool.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -702,12 +743,12 @@ templates:
           handler: handleUnpauseGyroPool
   - kind: ethereum/contract
     name: GyroEPool
-    network: goerli
+    network: sepolia
     source:
-      abi: GyroEPool
+      abi: GyroEV2Pool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -717,8 +758,10 @@ templates:
         - PoolToken
         - GradualWeightUpdate
       abis:
-        - name: GyroEPool
-          file: ./abis/GyroEPool.json
+        - name: GyroEV2Pool
+          file: ./abis/GyroEV2Pool.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -730,12 +773,12 @@ templates:
           handler: handleUnpauseGyroPool
   - kind: ethereum/contract
     name: FXPool
-    network: goerli
+    network: sepolia
     source:
       abi: FXPool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
@@ -747,6 +790,8 @@ templates:
       abis:
         - name: FXPool
           file: ./abis/FXPool.json
+        - name: Vault
+          file: ./abis/Vault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -754,12 +799,12 @@ templates:
           handler: handleParametersSet
   - kind: ethereum/contract
     name: OffchainAggregator
-    network: goerli
+    network: sepolia
     source:
       abi: AccessControlledOffchainAggregator
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/mappings/pricing.ts
       entities:
@@ -770,3 +815,4 @@ templates:
       eventHandlers:
         - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
           handler: handleAnswerUpdated
+

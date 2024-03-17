@@ -1,4 +1,4 @@
-name: Deploy Graph
+name: Deploy Hosted Service Prod
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
       - name: Install
         run: yarn --frozen-lockfile
       - name: Assets
@@ -22,35 +22,35 @@ jobs:
         run: yarn codegen
       - name: Build
         run: yarn build
-      - uses: gtaschuk/graph-deploy@v0.1.12
+      - uses: balancer-labs/graph-deploy@v0.0.1
         with:
           graph_access_token: ${{secrets.GRAPH_ACCESS_TOKEN}}
           graph_subgraph_name: "balancer-goerli-v2"
           graph_account: "balancer-labs"
           graph_config_file: "subgraph.goerli.yaml"
-  # deploy-mainnet:
-  #   runs-on: ubuntu-latest
-  #   environment: graph
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Install node
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 14
-  #     - name: Install
-  #       run: yarn --frozen-lockfile
-  #     - name: Assets
-  #       run: yarn generate-assets
-  #     - name: Codegen
-  #       run: yarn codegen
-  #     - name: Build
-  #       run: yarn build
-  #     - uses: gtaschuk/graph-deploy@v0.1.12
-  #       with:
-  #         graph_access_token: ${{secrets.GRAPH_ACCESS_TOKEN}}
-  #         graph_subgraph_name: "balancer-v2"
-  #         graph_account: "balancer-labs"
-  #         graph_config_file: "subgraph.yaml"
+  deploy-mainnet:
+    runs-on: ubuntu-latest
+    environment: graph
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - name: Install
+        run: yarn --frozen-lockfile
+      - name: Assets
+        run: yarn generate-assets
+      - name: Codegen
+        run: yarn codegen
+      - name: Build
+        run: yarn build
+      - uses: balancer-labs/graph-deploy@v0.0.1
+        with:
+          graph_access_token: ${{secrets.GRAPH_ACCESS_TOKEN}}
+          graph_subgraph_name: "balancer-v2"
+          graph_account: "balancer-labs"
+          graph_config_file: "subgraph.yaml"
   deploy-polygon:
     runs-on: ubuntu-latest
     environment: graph
@@ -59,7 +59,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
       - name: Install
         run: yarn --frozen-lockfile
       - name: Assets
@@ -68,7 +68,7 @@ jobs:
         run: yarn codegen
       - name: Build
         run: yarn build
-      - uses: gtaschuk/graph-deploy@v0.1.12
+      - uses: balancer-labs/graph-deploy@v0.0.1
         with:
           graph_access_token: ${{secrets.GRAPH_ACCESS_TOKEN}}
           graph_subgraph_name: "balancer-polygon-v2"
@@ -82,7 +82,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
       - name: Install
         run: yarn --frozen-lockfile
       - name: Assets
@@ -91,12 +91,12 @@ jobs:
         run: yarn codegen
       - name: Build
         run: yarn build
-      - uses: gtaschuk/graph-deploy@v0.1.12
+      - uses: balancer-labs/graph-deploy@v0.0.1
         with:
           graph_access_token: ${{secrets.GRAPH_ACCESS_TOKEN}}
           graph_subgraph_name: "balancer-polygon-prune-v2"
           graph_account: "balancer-labs"
-          graph_config_file: "subgraph.polygon.yaml"
+          graph_config_file: "subgraph.polygon.pruned.yaml"
   deploy-arbitrum:
     runs-on: ubuntu-latest
     environment: graph
@@ -105,7 +105,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
       - name: Install
         run: yarn --frozen-lockfile
       - name: Assets
@@ -114,7 +114,7 @@ jobs:
         run: yarn codegen
       - name: Build
         run: yarn build
-      - uses: gtaschuk/graph-deploy@v0.1.12
+      - uses: balancer-labs/graph-deploy@v0.0.1
         with:
           graph_access_token: ${{secrets.GRAPH_ACCESS_TOKEN}}
           graph_subgraph_name: "balancer-arbitrum-v2"
@@ -128,7 +128,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
       - name: Install
         run: yarn --frozen-lockfile
       - name: Assets
@@ -137,7 +137,7 @@ jobs:
         run: yarn codegen
       - name: Build
         run: yarn build
-      - uses: gtaschuk/graph-deploy@v0.1.12
+      - uses: balancer-labs/graph-deploy@v0.0.1
         with:
           graph_access_token: ${{secrets.GRAPH_ACCESS_TOKEN}}
           graph_subgraph_name: "balancer-gnosis-chain-v2"
@@ -151,7 +151,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
       - name: Install
         run: yarn --frozen-lockfile
       - name: Assets
@@ -160,11 +160,58 @@ jobs:
         run: yarn codegen
       - name: Build
         run: yarn build
-      - uses: gtaschuk/graph-deploy@v0.1.12
+      - uses: balancer-labs/graph-deploy@v0.0.1
         with:
           graph_access_token: ${{secrets.GRAPH_ACCESS_TOKEN}}
           graph_subgraph_name: "balancer-bnbchain-v2"
           graph_account: "balancer-labs"
           graph_config_file: "subgraph.bnb.yaml"
+  deploy-avalanche:
+    runs-on: ubuntu-latest
+    environment: graph
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - name: Install
+        run: yarn --frozen-lockfile
+      - name: Assets
+        run: yarn generate-assets avalanche
+      - name: Codegen
+        run: yarn codegen
+      - name: Build
+        run: yarn build
+      - uses: balancer-labs/graph-deploy@v0.0.1
+        with:
+          graph_access_token: ${{secrets.GRAPH_ACCESS_TOKEN}}
+          graph_subgraph_name: "balancer-avalanche-v2"
+          graph_account: "balancer-labs"
+          graph_config_file: "subgraph.avalanche.yaml"
+  deploy-optimism:
+    runs-on: ubuntu-latest
+    environment: graph
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - name: Install
+        run: yarn --frozen-lockfile
+      - name: Assets
+        run: yarn generate-assets optimism
+      - name: Codegen
+        run: yarn codegen
+      - name: Build
+        run: yarn build
+      - uses: balancer-labs/graph-deploy@v0.0.1
+        with:
+          graph_access_token: ${{secrets.GRAPH_ACCESS_TOKEN}}
+          graph_subgraph_name: "balancer-optimism-v2"
+          graph_account: "balancer-labs"
+          graph_config_file: "subgraph.optimism.yaml"
+
 env:
   CI: true

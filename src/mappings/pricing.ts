@@ -1,16 +1,30 @@
-import { Address, Bytes, BigInt, BigDecimal, log } from '@graphprotocol/graph-ts';
-import { Pool, TokenPrice, Balancer, PoolHistoricalLiquidity, LatestPrice, Token } from '../types/schema';
+import { Address, Bytes, BigInt, BigDecimal, log, dataSource } from '@graphprotocol/graph-ts';
+import { Pool, TokenPrice, Balancer, PoolHistoricalLiquidity, LatestPrice, Token, FXOracle } from '../types/schema';
 import {
   ZERO_BD,
   PRICING_ASSETS,
   USD_STABLE_ASSETS,
   ONE_BD,
   ZERO_ADDRESS,
-  FX_AGGREGATOR_ADDRESSES,
-  FX_TOKEN_ADDRESSES,
+  MIN_POOL_LIQUIDITY,
 } from './helpers/constants';
-import { hasVirtualSupply, isComposableStablePool, PoolType } from './helpers/pools';
-import { createPoolSnapshot, getBalancerSnapshot, getToken, loadPoolToken, scaleDown } from './helpers/misc';
+import { hasVirtualSupply, isComposableStablePool, isLinearPool, isFXPool, PoolType } from './helpers/pools';
+import {
+  bytesToAddress,
+  createPoolSnapshot,
+  getBalancerSnapshot,
+  getToken,
+  getTokenPriceId,
+  loadPoolToken,
+  scaleDown,
+} from './helpers/misc';
+import { AaveLinearPool } from '../types/AaveLinearPoolFactory/AaveLinearPool';
+import {
+  FX_ASSET_AGGREGATORS,
+  MAX_POS_PRICE_CHANGE,
+  MAX_NEG_PRICE_CHANGE,
+  MAX_TIME_DIFF_FOR_PRICING,
+} from './helpers/constants';
 import { AnswerUpdated } from '../types/templates/OffchainAggregator/AccessControlledOffchainAggregator';
 
 export function isPricingAsset(asset: Address): boolean {
@@ -104,11 +118,12 @@ export function addHistoricalPoolLiquidityRecord(poolId: string, block: BigInt, 
   return true;
 }
 
-export function updatePoolLiquidity(poolId: string, timestamp: i32): boolean {
+export function updatePoolLiquidity(poolId: string, block_number: BigInt, timestamp: BigInt): boolean {
   let pool = Pool.load(poolId);
   if (pool == null) return false;
   let tokensList: Bytes[] = pool.tokensList;
   let newPoolLiquidity: BigDecimal = ZERO_BD;
+  let newPoolLiquiditySansBPT: BigDecimal = ZERO_BD;
 
   for (let j: i32 = 0; j < tokensList.length; j++) {
     let tokenAddress: Address = Address.fromString(tokensList[j].toHexString());
@@ -121,29 +136,59 @@ export function updatePoolLiquidity(poolId: string, timestamp: i32): boolean {
     if (poolToken == null) continue;
 
     let poolTokenQuantity: BigDecimal = poolToken.balance;
-    let poolTokenValue = valueInUSD(poolTokenQuantity, tokenAddress);
+    let poolTokenValue: BigDecimal = ZERO_BD;
+    if (!isFXPool(pool)) {
+      poolTokenValue = valueInUSD(poolTokenQuantity, tokenAddress);
+    } else {
+      // Custom computation for FXPool tokens
+      poolTokenValue = valueInFX(poolTokenQuantity, tokenAddress);
+    }
+
     newPoolLiquidity = newPoolLiquidity.plus(poolTokenValue);
+
+    let token = getToken(tokenAddress);
+    if (token.pool == null) {
+      newPoolLiquiditySansBPT = newPoolLiquiditySansBPT.plus(poolTokenValue);
+    }
   }
 
-  let oldPoolLiquidity: BigDecimal = pool.totalLiquidity;
-  let liquidityChange: BigDecimal = newPoolLiquidity.minus(oldPoolLiquidity);
-
   // Update pool stats
+  let liquidityChange = ZERO_BD;
+  let oldPoolLiquidity = pool.totalLiquidity;
+  let oldPoolLiquiditySansBPT = pool.totalLiquiditySansBPT;
+
+  if (dataSource.network() == 'arbitrum' || dataSource.network() == 'matic') {
+    // keep old logic on arbitrum and polygon to avoid breaking liquidity charts
+    liquidityChange = newPoolLiquidity.minus(oldPoolLiquidity);
+  } else if (oldPoolLiquiditySansBPT) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    liquidityChange = newPoolLiquiditySansBPT.minus(oldPoolLiquiditySansBPT!);
+  }
+
+  pool.totalLiquiditySansBPT = newPoolLiquiditySansBPT;
   pool.totalLiquidity = newPoolLiquidity;
   pool.save();
 
+  // We want to avoid too frequently calling setWrappedTokenPrice because it makes a call to the rate provider
+  // Doing it here allows us to do it only once, when the MIN_POOL_LIQUIDITY threshold is crossed
+  if (oldPoolLiquidity < MIN_POOL_LIQUIDITY) {
+    setWrappedTokenPrice(pool, poolId, block_number, timestamp);
+  }
+
   // update BPT price
-  updateBptPrice(pool);
+  if (newPoolLiquidity.gt(MIN_POOL_LIQUIDITY)) {
+    updateBptPrice(pool);
+  }
 
   // Create or update pool daily snapshot
-  createPoolSnapshot(pool, timestamp);
+  createPoolSnapshot(pool, timestamp.toI32());
 
   // Update global stats
   let vault = Balancer.load('2') as Balancer;
   vault.totalLiquidity = vault.totalLiquidity.plus(liquidityChange);
   vault.save();
 
-  let vaultSnapshot = getBalancerSnapshot(vault.id, timestamp);
+  let vaultSnapshot = getBalancerSnapshot(vault.id, timestamp.toI32());
   vaultSnapshot.totalLiquidity = vault.totalLiquidity;
   vaultSnapshot.save();
 
@@ -168,6 +213,19 @@ export function valueInUSD(value: BigDecimal, asset: Address): BigDecimal {
   return usdValue;
 }
 
+export function valueInFX(value: BigDecimal, asset: Address): BigDecimal {
+  let token = getToken(asset);
+
+  if (token.latestFXPrice) {
+    // convert to USD using latestFXPrice
+    const latestFXPrice = token.latestFXPrice as BigDecimal;
+    return value.times(latestFXPrice);
+  } else {
+    // fallback if latestFXPrice is not available
+    return valueInUSD(value, asset);
+  }
+}
+
 export function updateBptPrice(pool: Pool): void {
   if (pool.totalShares.equals(ZERO_BD)) return;
 
@@ -188,23 +246,31 @@ export function swapValueInUSD(
   if (isUSDStable(tokenOutAddress)) {
     // if one of the tokens is a stable, it takes precedence
     swapValueUSD = valueInUSD(tokenAmountOut, tokenOutAddress);
+    return swapValueUSD;
   } else if (isUSDStable(tokenInAddress)) {
     // if one of the tokens is a stable, it takes precedence
     swapValueUSD = valueInUSD(tokenAmountIn, tokenInAddress);
-  } else if (isPricingAsset(tokenInAddress) && !isPricingAsset(tokenOutAddress)) {
+    return swapValueUSD;
+  }
+
+  if (isPricingAsset(tokenInAddress) && !isPricingAsset(tokenOutAddress)) {
     // if only one of the tokens is a pricing asset, it takes precedence
     swapValueUSD = valueInUSD(tokenAmountIn, tokenInAddress);
-  } else if (isPricingAsset(tokenOutAddress) && !isPricingAsset(tokenInAddress)) {
+    if (swapValueUSD.gt(ZERO_BD)) return swapValueUSD;
+  }
+
+  if (isPricingAsset(tokenOutAddress) && !isPricingAsset(tokenInAddress)) {
     // if only one of the tokens is a pricing asset, it takes precedence
     swapValueUSD = valueInUSD(tokenAmountOut, tokenOutAddress);
-  } else {
-    // if none or both tokens are pricing assets, take the average of the known prices
-    let tokenInSwapValueUSD = valueInUSD(tokenAmountIn, tokenInAddress);
-    let tokenOutSwapValueUSD = valueInUSD(tokenAmountOut, tokenOutAddress);
-    let divisor =
-      tokenInSwapValueUSD.gt(ZERO_BD) && tokenOutSwapValueUSD.gt(ZERO_BD) ? BigDecimal.fromString('2') : ONE_BD;
-    swapValueUSD = tokenInSwapValueUSD.plus(tokenOutSwapValueUSD).div(divisor);
+    if (swapValueUSD.gt(ZERO_BD)) return swapValueUSD;
   }
+
+  // if none or both tokens are pricing assets, take the average of the known prices
+  let tokenInSwapValueUSD = valueInUSD(tokenAmountIn, tokenInAddress);
+  let tokenOutSwapValueUSD = valueInUSD(tokenAmountOut, tokenOutAddress);
+  let divisor =
+    tokenInSwapValueUSD.gt(ZERO_BD) && tokenOutSwapValueUSD.gt(ZERO_BD) ? BigDecimal.fromString('2') : ONE_BD;
+  swapValueUSD = tokenInSwapValueUSD.plus(tokenOutSwapValueUSD).div(divisor);
 
   return swapValueUSD;
 }
@@ -213,7 +279,7 @@ export function getLatestPriceId(tokenAddress: Address, pricingAsset: Address): 
   return tokenAddress.toHexString().concat('-').concat(pricingAsset.toHexString());
 }
 
-export function updateLatestPrice(tokenPrice: TokenPrice): void {
+export function updateLatestPrice(tokenPrice: TokenPrice, blockTimestamp: BigInt): void {
   let tokenAddress = Address.fromString(tokenPrice.asset.toHexString());
   let pricingAsset = Address.fromString(tokenPrice.pricingAsset.toHexString());
 
@@ -233,10 +299,31 @@ export function updateLatestPrice(tokenPrice: TokenPrice): void {
 
   let token = getToken(tokenAddress);
   const pricingAssetAddress = Address.fromString(tokenPrice.pricingAsset.toHexString());
-  const tokenInUSD = valueInUSD(tokenPrice.price, pricingAssetAddress);
-  token.latestUSDPrice = tokenInUSD;
-  token.latestPrice = latestPrice.id;
-  token.save();
+  const currentUSDPrice = valueInUSD(tokenPrice.price, pricingAssetAddress);
+
+  if (currentUSDPrice == ZERO_BD) return;
+
+  let oldUSDPrice = token.latestUSDPrice;
+  if (!oldUSDPrice || oldUSDPrice.equals(ZERO_BD)) {
+    token.latestUSDPriceTimestamp = blockTimestamp;
+    token.latestUSDPrice = currentUSDPrice;
+    token.latestPrice = latestPrice.id;
+    token.save();
+    return;
+  }
+
+  let change = currentUSDPrice.minus(oldUSDPrice).div(oldUSDPrice);
+  if (
+    !token.latestUSDPriceTimestamp ||
+    (change.lt(MAX_POS_PRICE_CHANGE) && change.gt(MAX_NEG_PRICE_CHANGE)) ||
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    blockTimestamp.minus(token.latestUSDPriceTimestamp!).gt(MAX_TIME_DIFF_FOR_PRICING)
+  ) {
+    token.latestUSDPriceTimestamp = blockTimestamp;
+    token.latestUSDPrice = currentUSDPrice;
+    token.latestPrice = latestPrice.id;
+    token.save();
+  }
 }
 
 function getPoolHistoricalLiquidityId(poolId: string, tokenAddress: Address, block: BigInt): string {
@@ -250,27 +337,88 @@ export function isUSDStable(asset: Address): boolean {
   return false;
 }
 
-export function handleAnswerUpdated(event: AnswerUpdated): void {
-  let tokenAddress = ZERO_ADDRESS;
-  const aggregatorAddress = event.address;
+// The wrapped token in a linear pool is hardly ever traded, meaning we rarely compute its USD price
+// This creates an exceptional entry for the token price of the wrapped token,
+// with the main token as the pricing asset even if it's not globally defined as one
+export function setWrappedTokenPrice(pool: Pool, poolId: string, block_number: BigInt, timestamp: BigInt): void {
+  if (isLinearPool(pool)) {
+    if (pool.totalLiquidity.gt(MIN_POOL_LIQUIDITY)) {
+      const poolAddress = bytesToAddress(pool.address);
+      let poolContract = AaveLinearPool.bind(poolAddress);
+      let rateCall = poolContract.try_getWrappedTokenRate();
+      if (rateCall.reverted) {
+        log.info('getWrappedTokenRate reverted', []);
+      } else {
+        const rate = rateCall.value;
+        const amount = BigDecimal.fromString('1');
+        const asset = bytesToAddress(pool.tokensList[pool.wrappedIndex]);
+        const pricingAsset = bytesToAddress(pool.tokensList[pool.mainIndex]);
+        const price = scaleDown(rate, 18);
+        let tokenPriceId = getTokenPriceId(poolId, asset, pricingAsset, block_number);
+        let tokenPrice = new TokenPrice(tokenPriceId);
+        tokenPrice.poolId = poolId;
+        tokenPrice.block = block_number;
+        tokenPrice.timestamp = timestamp.toI32();
+        tokenPrice.asset = asset;
+        tokenPrice.pricingAsset = pricingAsset;
+        tokenPrice.amount = amount;
+        tokenPrice.price = price;
+        tokenPrice.save();
+        updateLatestPrice(tokenPrice, timestamp);
+      }
+    }
+  }
+}
 
-  for (let i = 0; i < FX_AGGREGATOR_ADDRESSES.length; i++) {
-    if (aggregatorAddress == FX_AGGREGATOR_ADDRESSES[i]) {
-      tokenAddress = FX_TOKEN_ADDRESSES[i];
-      break;
+export function handleAnswerUpdated(event: AnswerUpdated): void {
+  const aggregatorAddress = event.address;
+  const answer = event.params.current;
+  const tokenAddressesToUpdate: Address[] = [];
+
+  // Check if the aggregator is under FX_ASSET_AGGREGATORS first (FXPoolFactory version)
+  for (let i = 0; i < FX_ASSET_AGGREGATORS.length; i++) {
+    if (aggregatorAddress == FX_ASSET_AGGREGATORS[i][1]) {
+      tokenAddressesToUpdate.push(FX_ASSET_AGGREGATORS[i][0]);
     }
   }
 
-  // Return if this answer is for another token we don't track
-  if (tokenAddress == ZERO_ADDRESS) return;
-
-  const token = Token.load(tokenAddress.toHexString());
-  if (token == null) {
-    log.warning('Token with address {} not found', [tokenAddress.toHexString()]);
-    return;
+  // Also check if aggregator exists from FXOracle entity (FXPoolDeployer version)
+  let oracle = FXOracle.load(aggregatorAddress.toHexString());
+  if (oracle) {
+    for (let i = 0; i < oracle.tokens.length; i++) {
+      const tokenAddress = Address.fromBytes(oracle.tokens[i]);
+      const tokenExists = tokenAddressesToUpdate.includes(tokenAddress);
+      if (!tokenExists) {
+        tokenAddressesToUpdate.push(tokenAddress);
+      }
+    }
   }
 
-  let rate = scaleDown(event.params.current, 8);
-  token.latestFXPrice = rate;
-  token.save();
+  // Update all tokens using this aggregator
+  for (let i = 0; i < tokenAddressesToUpdate.length; i++) {
+    const tokenAddress = tokenAddressesToUpdate[i];
+    const token = Token.load(tokenAddress.toHexString());
+    if (token == null) {
+      log.warning('Token with address {} not found', [tokenAddress.toHexString()]);
+      return;
+    }
+
+    // All tokens we track have oracles with 8 decimals
+    if (!token.fxOracleDecimals) {
+      token.fxOracleDecimals = 8; // @todo: get decimals on-chain
+    }
+
+    if (tokenAddress == Address.fromString('0xc8bb8eda94931ca2f20ef43ea7dbd58e68400400')) {
+      // XAU-USD oracle returns an answer with price unit of "USD per troy ounce"
+      // For VNXAU however, we wanna use a price unit of "USD per gram"
+      const divisor = '3110347680'; // 31.1034768 * 1e8 (31.10 gram per troy ounce)
+      const multiplier = '100000000'; // 1 * 1e8
+      const pricePerGram = answer.times(BigInt.fromString(multiplier)).div(BigInt.fromString(divisor));
+      token.latestFXPrice = scaleDown(pricePerGram, 8);
+    } else {
+      token.latestFXPrice = scaleDown(answer, 8);
+    }
+
+    token.save();
+  }
 }
