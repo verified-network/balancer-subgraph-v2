@@ -787,8 +787,8 @@ sepolia:
     address: "0xDA13BC71FEe08FfD523f10458B0e2c2D8427BBD5"
     startBlock: 5492879
   SecondaryIssuePoolFactory:
-    address: "0xe5459436AE26C4fDC77f51c459e9Aa08b5d32064"
-    startBlock: 5492881
+    address: "0x22a8Abd15b6Dd968EeC078725ACD0d5CD3f5199c"
+    startBlock: 5615708
   MarginTradingPoolFactory:
     address: "0xB1ae3Fc5B16d3736bf0db20606fB9a10b435392c"
     startBlock: 5492908

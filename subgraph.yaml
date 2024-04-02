@@ -84,9 +84,9 @@ dataSources:
     name: SecondaryIssuePoolFactory
     network: sepolia
     source:
-      address: '0xe5459436AE26C4fDC77f51c459e9Aa08b5d32064'
+      address: '0x22a8Abd15b6Dd968EeC078725ACD0d5CD3f5199c'
       abi: SecondaryIssuePoolFactory
-      startBlock: 5492881
+      startBlock: 5615708
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
