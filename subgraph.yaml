@@ -1,16 +1,41 @@
 specVersion: 0.0.4
 description: The Verified Vault manages wallet balances in liquidity pools for security tokens.
+#features:
+#  - grafting
+#graft:
+#  base: QmfFmtcLKRugnPe8HFmmvdtUgM6gvUSSsFXGeCTX6sH4Zg
+#  block: 54559455
 repository: https://github.com/balancer-labs/balancer-subgraph-v2
 schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
+    name: EventEmitter
+    network: matic
+    source:
+      address: '0xcdcECFa416EE3022030E707dC3EA13a8997D74c8'
+      abi: EventEmitter
+      startBlock: 38152461
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./src/mappings/eventEmitter.ts
+      entities:
+        - Pool
+      abis:
+        - name: EventEmitter
+          file: ./abis/EventEmitter.json
+      eventHandlers:
+        - event: LogArgument(indexed address,indexed bytes32,bytes,uint256)
+          handler: handleLogArgument
+  - kind: ethereum/contract
     name: Vault
-    network: sepolia
+    network: matic
     source:
       address: '0xBA12222222228d8Ba445958a75a0704d566BF2C8'
       abi: Vault
-      startBlock: 3418831
+      startBlock: 15832990
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -53,11 +78,11 @@ dataSources:
           handler: handleInternalBalanceChange
   - kind: ethereum/contract
     name: PrimaryIssuePoolFactory
-    network: sepolia
+    network: matic
     source:
-      address: '0xDA13BC71FEe08FfD523f10458B0e2c2D8427BBD5'
+      address: '0xc7de872452d18d442F2527d1371894F68dEcce24'
       abi: PrimaryIssuePoolFactory
-      startBlock: 5492879
+      startBlock: 54690350
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -82,11 +107,11 @@ dataSources:
           handler: handleNewPrimaryPool
   - kind: ethereum/contract
     name: SecondaryIssuePoolFactory
-    network: sepolia
+    network: matic
     source:
-      address: '0xde763208aB2279435D0e6AA4297d25164873Fe82'
+      address: '0xaAfde4aB7119d705a66E2338826F502b68Fa88EA'
       abi: SecondaryIssuePoolFactory
-      startBlock: 5637273
+      startBlock: 55518324
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -111,11 +136,11 @@ dataSources:
           handler: handleNewSecondaryPool          
   - kind: ethereum/contract
     name: MarginTradingPoolFactory
-    network: sepolia
+    network: matic
     source:
-      address: '0xB1ae3Fc5B16d3736bf0db20606fB9a10b435392c'
+      address: '0xde63bca2d746F4a9D4D7B6E88b943dcc90C50c79'
       abi: MarginTradingPoolFactory
-      startBlock: 5492908
+      startBlock: 54674970
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -141,7 +166,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: WeightedPool
-    network: sepolia
+    network: matic
     source:
       abi: WeightedPool
     mapping:
@@ -168,7 +193,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: WeightedPoolV2
-    network: sepolia
+    network: matic
     source:
       abi: WeightedPoolV2
     mapping:
@@ -199,7 +224,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: WeightedPool2Tokens
-    network: sepolia
+    network: matic
     source:
       abi: WeightedPool2Tokens
     mapping:
@@ -228,7 +253,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: StablePool
-    network: sepolia
+    network: matic
     source:
       abi: StablePool
     mapping:
@@ -259,7 +284,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: MetaStablePool
-    network: sepolia
+    network: matic
     source:
       abi: MetaStablePool
     mapping:
@@ -299,7 +324,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: ConvergentCurvePool
-    network: sepolia
+    network: matic
     source:
       abi: ConvergentCurvePool
     mapping:
@@ -322,7 +347,7 @@ templates:
           handler: handleTransfer
   - kind: ethereum/contract
     name: LiquidityBootstrappingPool
-    network: sepolia
+    network: matic
     source:
       abi: LiquidityBootstrappingPool
     mapping:
@@ -354,7 +379,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: InvestmentPool
-    network: sepolia
+    network: matic
     source:
       abi: InvestmentPool
     mapping:
@@ -388,7 +413,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: ManagedPool
-    network: sepolia
+    network: matic
     source:
       abi: ManagedPool
     mapping:
@@ -444,7 +469,7 @@ templates:
           handler: handleEncodedProtocolFeePercentageCacheUpdated
   - kind: ethereum/contract
     name: StablePhantomPool
-    network: sepolia
+    network: matic
     source:
       abi: StablePhantomPool
     mapping:
@@ -482,7 +507,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: StablePhantomPoolV2
-    network: sepolia
+    network: matic
     source:
       abi: ComposableStablePool
     mapping:
@@ -526,7 +551,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: LinearPool
-    network: sepolia
+    network: matic
     source:
       abi: LinearPool
     mapping:
@@ -560,7 +585,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: PrimaryIssuePool
-    network: sepolia
+    network: matic
     source:
       abi: PrimaryIssuePool
     mapping:
@@ -589,7 +614,7 @@ templates:
           handler: handleSubscription
   - kind: ethereum/contract
     name: SecondaryIssuePool
-    network: sepolia
+    network: matic
     source:
       abi: SecondaryIssuePool
     mapping:
@@ -620,7 +645,7 @@ templates:
           handler: handleOrderBook
   - kind: ethereum/contract
     name: OffchainSecondariesPool
-    network: sepolia
+    network: matic
     source:
       abi: OffchainSecondariesPool
     mapping:
@@ -651,7 +676,7 @@ templates:
           handler: handleOffchainOrderBook
   - kind: ethereum/contract
     name: MarginTradingPool
-    network: sepolia
+    network: matic
     source:
       abi: MarginTradingPool
     mapping:
@@ -682,7 +707,7 @@ templates:
           handler: handleMarginOrderBook
   - kind: ethereum/contract
     name: Gyro2Pool
-    network: sepolia
+    network: matic
     source:
       abi: Gyro2V2Pool
     mapping:
@@ -712,7 +737,7 @@ templates:
           handler: handleUnpauseGyroPool
   - kind: ethereum/contract
     name: Gyro3Pool
-    network: sepolia
+    network: matic
     source:
       abi: Gyro3Pool
     mapping:
@@ -742,7 +767,7 @@ templates:
           handler: handleUnpauseGyroPool
   - kind: ethereum/contract
     name: GyroEPool
-    network: sepolia
+    network: matic
     source:
       abi: GyroEV2Pool
     mapping:
@@ -772,7 +797,7 @@ templates:
           handler: handleUnpauseGyroPool
   - kind: ethereum/contract
     name: FXPool
-    network: sepolia
+    network: matic
     source:
       abi: FXPool
     mapping:
@@ -798,7 +823,7 @@ templates:
           handler: handleParametersSet
   - kind: ethereum/contract
     name: OffchainAggregator
-    network: sepolia
+    network: matic
     source:
       abi: AccessControlledOffchainAggregator
     mapping:

@@ -245,17 +245,17 @@ goerli:
     startBlock: 10447153
 polygon:
   network: matic
-  graft:
+  #graft:
     # CSP V6 start block
-    block: 53996258
+    #block: 54559455
     # this will be the base of the unpruned deployment, so make sure it has not been pruned
     # it should be possible to run time travel queries on it going back to the vault's startBlock
-    base: QmRCGtj72CHWPWhmfQW75SuvFhziHbBkr2aNm7rHGrsmth
-  graft_pruned:
+    #base: QmfFmtcLKRugnPe8HFmmvdtUgM6gvUSSsFXGeCTX6sH4Zg
+  #graft_pruned:
     # CSP V6 start block
-    block: 53996258
+    #block: 54559455
     # this will be the base of the pruned deployment, so it is ok if it is a pruned subgraph
-    base: QmRCGtj72CHWPWhmfQW75SuvFhziHbBkr2aNm7rHGrsmth
+    #base: QmfFmtcLKRugnPe8HFmmvdtUgM6gvUSSsFXGeCTX6sH4Zg
   EventEmitter:
     address: "0xcdcECFa416EE3022030E707dC3EA13a8997D74c8"
     startBlock: 38152461
@@ -380,8 +380,8 @@ polygon:
     address: "0xc7de872452d18d442F2527d1371894F68dEcce24"
     startBlock: 54690350
   SecondaryIssuePoolFactory:
-    address: "0x9dC160D022799c47C2Fc3cE2F09Ba5beBD55434F"
-    startBlock: 54690428
+    address: "0xaAfde4aB7119d705a66E2338826F502b68Fa88EA"
+    startBlock: 55518324
   MarginTradingPoolFactory:
     address: "0xde63bca2d746F4a9D4D7B6E88b943dcc90C50c79"
     startBlock: 54674970
