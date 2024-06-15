@@ -1,21 +1,16 @@
 specVersion: 0.0.4
 description: The Verified Vault manages wallet balances in liquidity pools for security tokens.
-#features:
-#  - grafting
-#graft:
-#  base: QmfFmtcLKRugnPe8HFmmvdtUgM6gvUSSsFXGeCTX6sH4Zg
-#  block: 54559455
 repository: https://github.com/balancer-labs/balancer-subgraph-v2
 schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
     name: EventEmitter
-    network: matic
+    network: gnosis
     source:
-      address: '0xcdcECFa416EE3022030E707dC3EA13a8997D74c8'
+      address: '0xd8bf95b44772213905a8a74881862347acbabc48'
       abi: EventEmitter
-      startBlock: 38152461
+      startBlock: 26892431
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -31,11 +26,11 @@ dataSources:
           handler: handleLogArgument
   - kind: ethereum/contract
     name: Vault
-    network: matic
+    network: gnosis
     source:
       address: '0xBA12222222228d8Ba445958a75a0704d566BF2C8'
       abi: Vault
-      startBlock: 15832990
+      startBlock: 24821598
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -78,11 +73,11 @@ dataSources:
           handler: handleInternalBalanceChange
   - kind: ethereum/contract
     name: PrimaryIssuePoolFactory
-    network: matic
+    network: gnosis
     source:
-      address: '0xc7de872452d18d442F2527d1371894F68dEcce24'
+      address: '0xd51114303E9640022F3222CD8AcD54Ea4DbA10D4'
       abi: PrimaryIssuePoolFactory
-      startBlock: 54690350
+      startBlock: 34472379
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -107,11 +102,11 @@ dataSources:
           handler: handleNewPrimaryPool
   - kind: ethereum/contract
     name: SecondaryIssuePoolFactory
-    network: matic
+    network: gnosis
     source:
-      address: '0xaAfde4aB7119d705a66E2338826F502b68Fa88EA'
+      address: '0x9567B156C039D141667BF77136D423226A7cCb59'
       abi: SecondaryIssuePoolFactory
-      startBlock: 55518324
+      startBlock: 34472408
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -136,11 +131,11 @@ dataSources:
           handler: handleNewSecondaryPool          
   - kind: ethereum/contract
     name: MarginTradingPoolFactory
-    network: matic
+    network: gnosis
     source:
-      address: '0xde63bca2d746F4a9D4D7B6E88b943dcc90C50c79'
+      address: '0x2291E72C85a12873bF7d60EeC2EE3f0a98A35204'
       abi: MarginTradingPoolFactory
-      startBlock: 54674970
+      startBlock: 34472822
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -166,7 +161,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: WeightedPool
-    network: matic
+    network: gnosis
     source:
       abi: WeightedPool
     mapping:
@@ -193,7 +188,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: WeightedPoolV2
-    network: matic
+    network: gnosis
     source:
       abi: WeightedPoolV2
     mapping:
@@ -224,7 +219,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: WeightedPool2Tokens
-    network: matic
+    network: gnosis
     source:
       abi: WeightedPool2Tokens
     mapping:
@@ -253,7 +248,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: StablePool
-    network: matic
+    network: gnosis
     source:
       abi: StablePool
     mapping:
@@ -284,7 +279,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: MetaStablePool
-    network: matic
+    network: gnosis
     source:
       abi: MetaStablePool
     mapping:
@@ -324,7 +319,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: ConvergentCurvePool
-    network: matic
+    network: gnosis
     source:
       abi: ConvergentCurvePool
     mapping:
@@ -347,7 +342,7 @@ templates:
           handler: handleTransfer
   - kind: ethereum/contract
     name: LiquidityBootstrappingPool
-    network: matic
+    network: gnosis
     source:
       abi: LiquidityBootstrappingPool
     mapping:
@@ -379,7 +374,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: InvestmentPool
-    network: matic
+    network: gnosis
     source:
       abi: InvestmentPool
     mapping:
@@ -413,7 +408,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: ManagedPool
-    network: matic
+    network: gnosis
     source:
       abi: ManagedPool
     mapping:
@@ -469,7 +464,7 @@ templates:
           handler: handleEncodedProtocolFeePercentageCacheUpdated
   - kind: ethereum/contract
     name: StablePhantomPool
-    network: matic
+    network: gnosis
     source:
       abi: StablePhantomPool
     mapping:
@@ -507,7 +502,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: StablePhantomPoolV2
-    network: matic
+    network: gnosis
     source:
       abi: ComposableStablePool
     mapping:
@@ -551,7 +546,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: LinearPool
-    network: matic
+    network: gnosis
     source:
       abi: LinearPool
     mapping:
@@ -585,7 +580,7 @@ templates:
           handler: handlePausedStateChanged
   - kind: ethereum/contract
     name: PrimaryIssuePool
-    network: matic
+    network: gnosis
     source:
       abi: PrimaryIssuePool
     mapping:
@@ -614,7 +609,7 @@ templates:
           handler: handleSubscription
   - kind: ethereum/contract
     name: SecondaryIssuePool
-    network: matic
+    network: gnosis
     source:
       abi: SecondaryIssuePool
     mapping:
@@ -645,7 +640,7 @@ templates:
           handler: handleOrderBook
   - kind: ethereum/contract
     name: OffchainSecondariesPool
-    network: matic
+    network: gnosis
     source:
       abi: OffchainSecondariesPool
     mapping:
@@ -676,7 +671,7 @@ templates:
           handler: handleOffchainOrderBook
   - kind: ethereum/contract
     name: MarginTradingPool
-    network: matic
+    network: gnosis
     source:
       abi: MarginTradingPool
     mapping:
@@ -707,7 +702,7 @@ templates:
           handler: handleMarginOrderBook
   - kind: ethereum/contract
     name: Gyro2Pool
-    network: matic
+    network: gnosis
     source:
       abi: Gyro2V2Pool
     mapping:
@@ -737,7 +732,7 @@ templates:
           handler: handleUnpauseGyroPool
   - kind: ethereum/contract
     name: Gyro3Pool
-    network: matic
+    network: gnosis
     source:
       abi: Gyro3Pool
     mapping:
@@ -767,7 +762,7 @@ templates:
           handler: handleUnpauseGyroPool
   - kind: ethereum/contract
     name: GyroEPool
-    network: matic
+    network: gnosis
     source:
       abi: GyroEV2Pool
     mapping:
@@ -797,7 +792,7 @@ templates:
           handler: handleUnpauseGyroPool
   - kind: ethereum/contract
     name: FXPool
-    network: matic
+    network: gnosis
     source:
       abi: FXPool
     mapping:
@@ -823,7 +818,7 @@ templates:
           handler: handleParametersSet
   - kind: ethereum/contract
     name: OffchainAggregator
-    network: matic
+    network: gnosis
     source:
       abi: AccessControlledOffchainAggregator
     mapping:

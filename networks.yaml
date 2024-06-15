@@ -587,14 +587,14 @@ gnosis:
   #   address: "0x6B5dA774890Db7B7b96C6f44e6a4b0F657399E2e"
   #   startBlock: 26691522
   PrimaryIssuePoolFactory:
-    address: "0xe5459436AE26C4fDC77f51c459e9Aa08b5d32064"
-    startBlock: 27841697
+    address: "0xd51114303E9640022F3222CD8AcD54Ea4DbA10D4"
+    startBlock: 34472379
   SecondaryIssuePoolFactory:
-    address: "0xB1ae3Fc5B16d3736bf0db20606fB9a10b435392c"
-    startBlock: 27841770
+    address: "0x9567B156C039D141667BF77136D423226A7cCb59"
+    startBlock: 34472408
   MarginTradingPoolFactory:
-    address: "0xa59606ADBB5cD6009a00c47cc844fA4683819017"
-    startBlock: 27841867
+    address: "0x2291E72C85a12873bF7d60EeC2EE3f0a98A35204"
+    startBlock: 34472822
 # optimism:
 #   network: optimism
 #   graft:
