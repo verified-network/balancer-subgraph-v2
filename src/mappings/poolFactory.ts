@@ -22,12 +22,14 @@ import {
 } from './helpers/misc';
 import { updatePoolWeights } from './helpers/weighted';
 
-import { BigInt, Address, Bytes, ethereum } from '@graphprotocol/graph-ts';
+import { BigInt, Address, Bytes, ethereum, log } from '@graphprotocol/graph-ts';
+
 import { PoolCreated } from '../types/WeightedPoolFactory/WeightedPoolFactory';
 import { AaveLinearPoolCreated } from '../types/AaveLinearPoolV3Factory/AaveLinearPoolV3Factory';
 import { ProtocolIdRegistered } from '../types/ProtocolIdRegistry/ProtocolIdRegistry';
 import { Balancer, Pool, PoolContract, ProtocolIdData } from '../types/schema';
 import { KassandraPoolCreated } from '../types/ManagedKassandraPoolControllerFactory/ManagedKassandraPoolControllerFactory';
+import { NewFXPoolDeployer } from '../types/FXPoolDeployerTracker/FXPoolDeployerTracker';
 
 // datasource
 import { OffchainAggregator, WeightedPool as WeightedPoolTemplate } from '../types/templates';
@@ -50,6 +52,7 @@ import { Gyro2Pool as Gyro2PoolTemplate } from '../types/templates';
 import { Gyro3Pool as Gyro3PoolTemplate } from '../types/templates';
 import { GyroEPool as GyroEPoolTemplate } from '../types/templates';
 import { FXPool as FXPoolTemplate } from '../types/templates';
+import { FXPoolDeployer as FXPoolDeployerTemplate } from '../types/templates';
 
 import { WeightedPool } from '../types/templates/WeightedPool/WeightedPool';
 import { WeightedPoolV2 } from '../types/templates/WeightedPoolV2/WeightedPoolV2';
@@ -66,6 +69,8 @@ import { GyroEV2Pool } from '../types/templates/GyroEPool/GyroEV2Pool';
 import { FXPool } from '../types/templates/FXPool/FXPool';
 import { Assimilator } from '../types/FXPoolDeployer/Assimilator';
 import { ChainlinkPriceFeed } from '../types/FXPoolDeployer/ChainlinkPriceFeed';
+import { OunceToGramOracle } from '../types/templates/FXPoolDeployer/OunceToGramOracle';
+import { AggregatorConverter } from '../types/templates/FXPoolDeployer/AggregatorConverter';
 import { Transfer } from '../types/Vault/ERC20';
 import { handleTransfer, setPriceRateProvider } from './poolController';
 import { ComposableStablePool } from '../types/ComposableStablePoolFactory/ComposableStablePool';
@@ -820,6 +825,10 @@ export function handleNewGyroEV2Pool(event: PoolCreated): void {
   createGyroEPool(event, 2);
 }
 
+export function handleNewFXPoolDeployer(event: NewFXPoolDeployer): void {
+  FXPoolDeployerTemplate.create(event.params.deployer);
+}
+
 export function handleNewFXPoolV1(event: ethereum.Event): void {
   return handleNewFXPool(event, false);
 }
@@ -906,6 +915,30 @@ function handleNewFXPool(event: ethereum.Event, permissionless: boolean): void {
       if (!tokenExists) {
         tokenAddresses.push(tokenAddress);
       }
+
+      // some oracles have a conversion rate
+      // eg. metal token oracles like Gold tokens are expressed in grams but the Chainlink
+      // oracle returns the price in troy ounces. We need to convert the price to grams
+      const gramPerTroyOunceCall = OunceToGramOracle.bind(oracleCall.value).try_GRAM_PER_TROYOUNCE();
+      if (!gramPerTroyOunceCall.reverted) {
+        // VNXAUGramOracle.sol oracle convertor (deprecated)
+        oracle.decimals = BigInt.fromString('8').toI32();
+        oracle.divisor = gramPerTroyOunceCall.value.toString();
+      } else {
+        // AggregatorConverter (current version)
+        // if the Oracle contract has a DIVISOR and DECIMALS function, it is an AggregatorConverter contract
+        const aggregatorConverterDivisorCall = AggregatorConverter.bind(oracleCall.value).try_DIVISOR();
+        if (!aggregatorConverterDivisorCall.reverted) {
+          const divisor = aggregatorConverterDivisorCall.value;
+          const aggregatorConverterDecimalsCall = AggregatorConverter.bind(oracleCall.value).try_DECIMALS();
+          if (!aggregatorConverterDecimalsCall.reverted) {
+            const decimals = aggregatorConverterDecimalsCall.value;
+            oracle.decimals = decimals.toI32();
+            oracle.divisor = divisor.toString();
+          }
+        }
+      }
+
       oracle.tokens = tokenAddresses;
       oracle.save();
     }
