@@ -589,6 +589,15 @@ gnosis:
   ProtocolIdRegistry:
     address: "0x6B5dA774890Db7B7b96C6f44e6a4b0F657399E2e"
     startBlock: 26691522
+  PrimaryIssuePoolFactory:
+    address: "0xd51114303E9640022F3222CD8AcD54Ea4DbA10D4"
+    startBlock: 34472379
+  SecondaryIssuePoolFactory:
+    address: "0x9567B156C039D141667BF77136D423226A7cCb59"
+    startBlock: 34472408
+  MarginTradingPoolFactory:
+    address: "0x2291E72C85a12873bF7d60EeC2EE3f0a98A35204"
+    startBlock: 34472822
 optimism:
   network: optimism
   graft:
@@ -783,6 +792,15 @@ sepolia:
   ManagedPoolV2Factory:
     address: "0x63e179C5b6d54B2c2e36b9cE4085EF5A8C86D50c"
     startBlock: 3425305
+  PrimaryIssuePoolFactory:
+    address: "0xDA13BC71FEe08FfD523f10458B0e2c2D8427BBD5"
+    startBlock: 5492879
+  SecondaryIssuePoolFactory:
+    address: "0xde763208aB2279435D0e6AA4297d25164873Fe82"
+    startBlock: 5637273
+  MarginTradingPoolFactory:
+    address: "0xB1ae3Fc5B16d3736bf0db20606fB9a10b435392c"
+    startBlock: 5492908
 polygon-zkevm:
   network: polygon-zkevm
   EventEmitter:

@@ -8,7 +8,7 @@
     "build": "graph build",
     "lint": "eslint --max-warnings 0 . --ext .ts",
     "test": "jest ./test/*.test.ts",
-    "deploy-polygon": "graph deploy vault-polygon",
+    "deploy-base": "graph deploy vault-base",
     "deploy-gnosis": "graph deploy vault-gnosis",
     "deploy-arbitrum": "graph deploy vault-arbitrum",
     "deploy-sepolia": "graph deploy verified-vault",
