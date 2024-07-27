@@ -853,21 +853,30 @@ base:
   Vault:
     address: "0xBA12222222228d8Ba445958a75a0704d566BF2C8"
     startBlock: 1196036
-  WeightedPoolV4Factory:
-    address: "0x4C32a8a8fDa4E24139B51b456B42290f51d6A1c4"
-    startBlock: 1204869
-  ComposableStablePoolV5Factory:
-    address: "0x8df317a729fcaA260306d7de28888932cb579b88"
-    startBlock: 1204710
-  ComposableStablePoolV6Factory:
-    address: "0x956CCab09898C0AF2aCa5e6C229c3aD4E93d9288"
-    startBlock: 11099703
-  TempLiquidityBootstrappingPoolFactory:
-    address: "0x0c6052254551EAe3ECac77B01DFcf1025418828f"
-    startBlock: 1206531
-  GyroEV2PoolFactory:
-    address: "0x15e86Be6084C6A5a8c17732D398dFbC2Ec574CEC"
-    startBlock: 13035219
+  #WeightedPoolV4Factory:
+  #  address: "0x4C32a8a8fDa4E24139B51b456B42290f51d6A1c4"
+  #  startBlock: 1204869
+  #ComposableStablePoolV5Factory:
+  #  address: "0x8df317a729fcaA260306d7de28888932cb579b88"
+  #  startBlock: 1204710
+  #ComposableStablePoolV6Factory:
+  #  address: "0x956CCab09898C0AF2aCa5e6C229c3aD4E93d9288"
+  #  startBlock: 11099703
+  #TempLiquidityBootstrappingPoolFactory:
+  #  address: "0x0c6052254551EAe3ECac77B01DFcf1025418828f"
+  #  startBlock: 1206531
+  #GyroEV2PoolFactory:
+  #  address: "0x15e86Be6084C6A5a8c17732D398dFbC2Ec574CEC"
+  #  startBlock: 13035219
+  PrimaryIssuePoolFactory:
+    address: "0x73465Be532Aa390728D3Bb75D0b16F936Cd56bBE"
+    startBlock: 17650089
+  SecondaryIssuePoolFactory:
+    address: "0xD0c101dd9B26B579D95d311dbaaF6CBCF0B55DeE"
+    startBlock: 17650165
+  MarginTradingPoolFactory:
+    address: "0xb864e62CFebd368F4491Fe52A4Fcc22c1c525F1C"
+    startBlock: 17650303
 fantom:
   network: fantom
   # graft:
