@@ -593,8 +593,8 @@ gnosis:
     address: "0xd51114303E9640022F3222CD8AcD54Ea4DbA10D4"
     startBlock: 34472379
   SecondaryIssuePoolFactory:
-    address: "0x9567B156C039D141667BF77136D423226A7cCb59"
-    startBlock: 34472408
+    address: "0xd5f976F6C2339203A72b87B5bfb9b22d278cF5cE"
+    startBlock: 35333706
   MarginTradingPoolFactory:
     address: "0x2291E72C85a12873bF7d60EeC2EE3f0a98A35204"
     startBlock: 34472822
