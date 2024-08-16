@@ -2493,6 +2493,31 @@ templates:
         - event: OrderBook(address,address,address,uint256,uint256,uint256,bytes32)
           handler: handleOrderBook
   - kind: ethereum/contract
+    name: Orderbook
+    network: {{network}}
+    source:
+      abi: Orderbook
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/mappings/poolController.ts
+      entities:
+        - Secondary
+        - PoolShare
+        - Swap
+        - PoolToken
+      abis:
+        - name: WeightedPool
+          file: ./abis/WeightedPool.json
+        - name: SecondaryIssuePool
+          file: ./abis/SecondaryIssuePool.json
+        - name: Orderbook
+          file: ./abis/Orderbook.json
+      eventHandlers:
+        - event: tradeExecuted(indexed address,address,address,uint256)
+          handler: handlePreTrades
+  - kind: ethereum/contract
     name: OffchainSecondariesPool
     network: {{network}}
     source:

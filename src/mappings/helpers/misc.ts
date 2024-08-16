@@ -13,6 +13,7 @@ import {
   BalancerSnapshot,
   Balancer,
   PrimaryIssues,
+  SecondaryPreTrades,
   SecondaryTrades,
   SecondaryOrders,
   MarginOrders,
@@ -230,6 +231,10 @@ export function loadPrimarySubscriptions(poolId: string, tokenAddress: Address):
 
 export function loadSecondaryTrades(poolId: string, tokenAddress: Address): SecondaryTrades | null {
   return SecondaryTrades.load(getPoolTokenId(poolId, tokenAddress));
+}
+
+export function loadSecondaryPreTrades(poolId: string, tokenAddress: Address): SecondaryPreTrades | null {
+  return SecondaryPreTrades.load(getPoolTokenId(poolId, tokenAddress));
 }
 
 export function loadSecondaryOrders(poolId: string, tokenAddress: Address): SecondaryOrders | null {

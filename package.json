@@ -11,7 +11,7 @@
     "deploy-base": "graph deploy vault-base",
     "deploy-gnosis": "graph deploy vault-gnosis",
     "deploy-arbitrum": "graph deploy vault-arbitrum",
-    "deploy-sepolia": "graph deploy vault-test",
+    "deploy-sepolia": "graph deploy test-vault",
     "deploy-mainnet": "graph deploy vault-mainnet",
     "deploy:local": "graph deploy balancer-labs/balancer-v2 subgraph.yaml --debug --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
     "import-abis": "ts-node ./scripts/update-abis.ts",

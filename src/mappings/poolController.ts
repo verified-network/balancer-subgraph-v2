@@ -27,6 +27,7 @@ import {
 import { PrimaryIssuePool, OpenIssue, Subscription } from '../types/templates/PrimaryIssuePool/PrimaryIssuePool';
 import { SecondaryIssuePool, Offer, TradeReport, OrderBook } from '../types/templates/SecondaryIssuePool/SecondaryIssuePool';
 import { MarginTradingPool, MarginOffer, MarginTradeReport, MarginOrderBook } from '../types/templates/MarginTradingPool/MarginTradingPool';
+import { tradeExecuted } from '../types/templates/OrderBook/Orderbook';
 import { OffchainSecondariesPool } from '../types/templates/OffchainSecondariesPool/OffchainSecondariesPool';
 import {
   TokenRateCacheUpdated,
@@ -43,7 +44,7 @@ import {
   PoolContract,
   Balancer,
   PoolToken,
-  PrimaryIssues, SecondaryTrades, SecondaryOrders, MarginOrders
+  PrimaryIssues, SecondaryPreTrades, SecondaryTrades, SecondaryOrders, MarginOrders
 } from '../types/schema';
 
 import {
@@ -54,6 +55,7 @@ import {
   loadPriceRateProvider,
   getPoolShare,
   loadPrimarySubscriptions,
+  loadSecondaryPreTrades,
   loadSecondaryTrades,
   loadSecondaryOrders,
   loadMarginOrders,
@@ -614,6 +616,31 @@ export function handleOrderBook(event: OrderBook): void {
     orders.orderReference = event.params.orderRef;
     orders.timestamp = event.params.timestamp;
     orders.save();
+  }
+}
+
+export function handlePreTrades(event: tradeExecuted): void {
+  let poolAddress = event.params.pool;
+
+  let poolContract = SecondaryIssuePool.bind(poolAddress);
+  let poolIdCall = poolContract.try_getPoolId();
+  let poolId = poolIdCall.value;
+
+  let trades  = loadSecondaryPreTrades(event.transaction.hash.toHexString(), event.params.pool);
+  if (trades == null) {
+    let providerId = getPoolTokenId(event.transaction.hash.toHexString(), event.params.pool);
+    let trades = new SecondaryPreTrades(providerId);   
+    trades.pool = poolId.toHexString(); 
+    trades.executionDate = event.params.tradeToReportDate;
+    trades.party = event.params.party.toHexString();
+    trades.counterparty = event.params.counterparty.toHexString();
+    trades.save();
+  } 
+  else{
+    trades.executionDate = event.params.tradeToReportDate;
+    trades.party = event.params.party.toHexString();
+    trades.counterparty = event.params.counterparty.toHexString();
+    trades.save();
   }
 }
 
