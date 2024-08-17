@@ -156,7 +156,7 @@ type Pool @entity {
   orderBook: Bytes
   issueManager: Bytes
   secondaryTrades: [SecondaryTrades!] @derivedFrom(field: "pool")
-  secondaryPreTrades: [SecondaryPreTrades!] @derivedFrom(field: "pool")
+  # secondaryPreTrades: [SecondaryPreTrades!] @derivedFrom(field: "pool")
   orders: [SecondaryOrders!]@derivedFrom(field: "pool")
 
   # MarginTradingPool only
@@ -175,14 +175,6 @@ type PrimaryIssues @entity {
   subscription: BigDecimal!
   investor: User!
   price: BigDecimal!
-  executionDate: BigInt!
-}
-
-type SecondaryPreTrades @entity {
-  id: ID!
-  pool: Pool!
-  party: User 
-  counterparty: User 
   executionDate: BigInt!
 }
 
@@ -209,6 +201,21 @@ type SecondaryOrders @entity {
   priceOffered: BigDecimal!
   timestamp: BigInt
   orderReference: Bytes!  
+  orderbook: Orderbook!
+}
+
+type Orderbook @entity {
+  id: ID!
+  preTrades: [SecondaryPreTrades!]! @derivedFrom(field: "orderbook")
+}
+
+type SecondaryPreTrades @entity {
+  id: ID!
+  pool: Pool!
+  party: User 
+  counterparty: User 
+  executionDate: BigInt!
+  orderbook: Orderbook!
 }
 
 type MarginOrders @entity {

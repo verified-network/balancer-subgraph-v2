@@ -626,21 +626,21 @@ export function handlePreTrades(event: tradeExecuted): void {
   let poolIdCall = poolContract.try_getPoolId();
   let poolId = poolIdCall.value;
 
-  let trades  = loadSecondaryPreTrades(event.transaction.hash.toHexString(), event.params.pool);
-  if (trades == null) {
+  let pretrades  = loadSecondaryPreTrades(event.transaction.hash.toHexString(), event.params.pool);
+  if (pretrades == null) {
     let providerId = getPoolTokenId(event.transaction.hash.toHexString(), event.params.pool);
-    let trades = new SecondaryPreTrades(providerId);   
-    trades.pool = poolId.toHexString(); 
-    trades.executionDate = event.params.tradeToReportDate;
-    trades.party = event.params.party.toHexString();
-    trades.counterparty = event.params.counterparty.toHexString();
-    trades.save();
+    let pretrades = new SecondaryPreTrades(providerId);   
+    pretrades.pool = poolId.toHexString(); 
+    pretrades.executionDate = event.params.tradeToReportDate;
+    pretrades.party = event.params.party.toHexString();
+    pretrades.counterparty = event.params.counterparty.toHexString();
+    pretrades.save();
   } 
   else{
-    trades.executionDate = event.params.tradeToReportDate;
-    trades.party = event.params.party.toHexString();
-    trades.counterparty = event.params.counterparty.toHexString();
-    trades.save();
+    pretrades.executionDate = event.params.tradeToReportDate;
+    pretrades.party = event.params.party.toHexString();
+    pretrades.counterparty = event.params.counterparty.toHexString();
+    pretrades.save();
   }
 }
 

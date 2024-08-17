@@ -300,6 +300,8 @@ dataSources:
           file: ./abis/SecondaryIssuePoolFactory.json
         - name: SecondaryIssuePool
           file: ./abis/SecondaryIssuePool.json
+        - name: Orderbook
+          file: ./abis/Orderbook.json
       eventHandlers:
         - event: PoolCreated(indexed address)
           handler: handleNewSecondaryPool          
@@ -2477,10 +2479,12 @@ templates:
         - Swap
         - PoolToken
       abis:
-        - name: WeightedPool
-          file: ./abis/WeightedPool.json
+        #- name: WeightedPool
+        #  file: ./abis/WeightedPool.json
         - name: SecondaryIssuePool
           file: ./abis/SecondaryIssuePool.json
+        #- name: Orderbook
+        #  file: ./abis/Orderbook.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -2508,10 +2512,10 @@ templates:
         - Swap
         - PoolToken
       abis:
-        - name: WeightedPool
-          file: ./abis/WeightedPool.json
-        - name: SecondaryIssuePool
-          file: ./abis/SecondaryIssuePool.json
+        #- name: WeightedPool
+        #  file: ./abis/WeightedPool.json
+        #- name: SecondaryIssuePool
+        #  file: ./abis/SecondaryIssuePool.json
         - name: Orderbook
           file: ./abis/Orderbook.json
       eventHandlers:
