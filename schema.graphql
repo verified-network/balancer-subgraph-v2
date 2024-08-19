@@ -153,10 +153,11 @@ type Pool @entity {
 
   # SecondaryPool and OffchainSecondariesPool only
   minOrderSize: BigInt
-  orderBook: Bytes
+  orderBook: Orderbook
+  #orderBook: Bytes
   issueManager: Bytes
   secondaryTrades: [SecondaryTrades!] @derivedFrom(field: "pool")
-  # secondaryPreTrades: [SecondaryPreTrades!] @derivedFrom(field: "pool")
+  #secondaryPreTrades: [SecondaryPreTrades!] @derivedFrom(field: "pool")
   orders: [SecondaryOrders!]@derivedFrom(field: "pool")
 
   # MarginTradingPool only
@@ -201,17 +202,16 @@ type SecondaryOrders @entity {
   priceOffered: BigDecimal!
   timestamp: BigInt
   orderReference: Bytes!  
-  orderbook: Orderbook!
 }
 
 type Orderbook @entity {
   id: ID!
-  preTrades: [SecondaryPreTrades!]! @derivedFrom(field: "orderbook")
+  secondaryPreTrades: [SecondaryPreTrades!]! @derivedFrom(field: "orderbook")
 }
 
 type SecondaryPreTrades @entity {
   id: ID!
-  pool: Pool!
+  pool: Pool
   party: User 
   counterparty: User 
   executionDate: BigInt!

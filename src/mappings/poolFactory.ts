@@ -406,7 +406,7 @@ export function handleNewSecondaryPool(event: PoolCreated): void {
   pool.owner = balancerManager;
   pool.principalToken = security;
   pool.baseToken = currency;
-  pool.orderBook = orderBook;
+  //pool.orderBook = orderBook;
 
   let tokens = getPoolTokens(poolId);
   if (tokens == null) return;
@@ -456,7 +456,7 @@ export function handleNewMarginPool(event: PoolCreated): void {
   pool.margin = margin;
   pool.collateral = collateral;
   pool.baseToken = currency;
-  pool.orderBook = orderBook;
+  //pool.orderBook = orderBook;
 
   let tokens = getPoolTokens(poolId);
   if (tokens == null) return;
@@ -498,7 +498,7 @@ export function handleNewOffchainSecondaryPool(event: PoolCreated): void {
   pool.owner = balancerManager;
   pool.principalToken = security;
   pool.baseToken = currency;
-  pool.orderBook = orderBook;
+  //pool.orderBook = orderBook;
 
   let tokens = getPoolTokens(poolId);
   if (tokens == null) return;

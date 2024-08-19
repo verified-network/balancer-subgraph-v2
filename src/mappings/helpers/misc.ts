@@ -233,8 +233,8 @@ export function loadSecondaryTrades(poolId: string, tokenAddress: Address): Seco
   return SecondaryTrades.load(getPoolTokenId(poolId, tokenAddress));
 }
 
-export function loadSecondaryPreTrades(poolId: string, tokenAddress: Address): SecondaryPreTrades | null {
-  return SecondaryPreTrades.load(getPoolTokenId(poolId, tokenAddress));
+export function loadSecondaryPreTrades(orderBook: string, tokenAddress: Address): SecondaryPreTrades | null {
+  return SecondaryPreTrades.load(getPoolTokenId(orderBook, tokenAddress));
 }
 
 export function loadSecondaryOrders(poolId: string, tokenAddress: Address): SecondaryOrders | null {

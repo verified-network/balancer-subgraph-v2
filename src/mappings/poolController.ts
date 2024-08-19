@@ -579,7 +579,7 @@ export function handleSubscription(event: Subscription): void {
   
   pool.security = event.params.security;
   pool.currency = event.params.currency;
-  pool.orderBook = event.params.orderBook;
+  pool.orderBook = event.params.orderBook.toHexString();
   pool.minOrderSize = event.params.minOrderSize;
   pool.issueManager = event.params.issueManager;
   
@@ -620,28 +620,28 @@ export function handleOrderBook(event: OrderBook): void {
 }
 
 export function handlePreTrades(event: tradeExecuted): void {
-  let poolAddress = event.params.pool;
+  let orderBook = event.address;
 
-  let poolContract = SecondaryIssuePool.bind(poolAddress);
-  let poolIdCall = poolContract.try_getPoolId();
-  let poolId = poolIdCall.value;
+  //let poolContract = SecondaryIssuePool.bind(poolAddress);
+  //let poolIdCall = poolContract.try_getPoolId();
+  //let poolId = poolIdCall.value;
 
-  let pretrades  = loadSecondaryPreTrades(event.transaction.hash.toHexString(), event.params.pool);
+  let pretrades  = loadSecondaryPreTrades(event.transaction.hash.toHexString(), orderBook);
   if (pretrades == null) {
-    let providerId = getPoolTokenId(event.transaction.hash.toHexString(), event.params.pool);
+    let providerId = getPoolTokenId(event.transaction.hash.toHexString(), orderBook);
     let pretrades = new SecondaryPreTrades(providerId);   
-    pretrades.pool = poolId.toHexString(); 
+    pretrades.pool = event.params.pool.toHexString(); 
     pretrades.executionDate = event.params.tradeToReportDate;
     pretrades.party = event.params.party.toHexString();
     pretrades.counterparty = event.params.counterparty.toHexString();
     pretrades.save();
   } 
-  else{
+  /*else{
     pretrades.executionDate = event.params.tradeToReportDate;
     pretrades.party = event.params.party.toHexString();
     pretrades.counterparty = event.params.counterparty.toHexString();
     pretrades.save();
-  }
+  }*/
 }
 
 export function handleTradeReport(event: TradeReport): void {
@@ -683,7 +683,7 @@ export function handleTradeReport(event: TradeReport): void {
 /************************************
  *******OFFCHAIN SECONDARY***********
  ************************************/
-
+/*
  export function handleOffchainSecondaryOffer(event: Offer): void {
   let poolAddress = event.address;
 
@@ -770,7 +770,7 @@ export function handleOffchainTradeReport(event: TradeReport): void {
   }
   
 }
-
+*/
 /************************************
  *************MARGIN POOL************
  ************************************/
@@ -790,7 +790,7 @@ export function handleOffchainTradeReport(event: TradeReport): void {
   pool.margin = event.params.margin;
   pool.collateral = event.params.collateral;
   pool.cficode = event.params.CfiCode;
-  pool.orderBook = event.params.orderBook;
+  pool.orderBook = event.params.orderBook.toHexString();
   pool.minOrderSize = event.params.minOrderSize;
   pool.issueManager = event.params.issueManager;
   

@@ -2483,8 +2483,8 @@ templates:
         #  file: ./abis/WeightedPool.json
         - name: SecondaryIssuePool
           file: ./abis/SecondaryIssuePool.json
-        #- name: Orderbook
-        #  file: ./abis/Orderbook.json
+        - name: Orderbook
+          file: ./abis/Orderbook.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
