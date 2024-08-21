@@ -2479,8 +2479,8 @@ templates:
         - Swap
         - PoolToken
       abis:
-        #- name: WeightedPool
-        #  file: ./abis/WeightedPool.json
+        - name: WeightedPool
+          file: ./abis/WeightedPool.json
         - name: SecondaryIssuePool
           file: ./abis/SecondaryIssuePool.json
         - name: Orderbook
@@ -2507,15 +2507,15 @@ templates:
       language: wasm/assemblyscript
       file: ./src/mappings/poolController.ts
       entities:
-        - Secondary
+        - Pool
         - PoolShare
         - Swap
         - PoolToken
       abis:
-        #- name: WeightedPool
-        #  file: ./abis/WeightedPool.json
-        #- name: SecondaryIssuePool
-        #  file: ./abis/SecondaryIssuePool.json
+        - name: WeightedPool
+          file: ./abis/WeightedPool.json
+        - name: SecondaryIssuePool
+          file: ./abis/SecondaryIssuePool.json
         - name: Orderbook
           file: ./abis/Orderbook.json
       eventHandlers:

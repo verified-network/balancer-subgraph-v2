@@ -44,6 +44,7 @@ import {
   PoolContract,
   Balancer,
   PoolToken,
+  Orderbook,
   PrimaryIssues, SecondaryPreTrades, SecondaryTrades, SecondaryOrders, MarginOrders
 } from '../types/schema';
 
@@ -587,6 +588,7 @@ export function handleSubscription(event: Subscription): void {
 }
 
 export function handleOrderBook(event: OrderBook): void {
+  log.info("handleOrderBook is running", []);
   let poolAddress = event.address;
 
   let poolContract = SecondaryIssuePool.bind(poolAddress);
@@ -620,6 +622,32 @@ export function handleOrderBook(event: OrderBook): void {
 }
 
 export function handlePreTrades(event: tradeExecuted): void {
+  log.info("handlePreTrades is running", []);
+  let pool = Pool.load(event.params.pool.toHexString());
+  if (pool == null) {
+    log.error("Pool is empty", [event.params.pool.toHexString()]);
+    return; // Handle error, pool not found
+  }
+
+  let orderbook = Orderbook.load(event.address.toHexString());
+  if (orderbook == null) {
+    log.error("Orderbook is empty", [event.address.toHexString()]);
+    return; // Handle error, orderbook not found
+  }
+  
+  let preTradeId = event.transaction.hash.toHex() + "-" + event.logIndex.toString();
+  let preTrade = new SecondaryPreTrades(preTradeId);
+  log.info("Pretrade data",[event.params.party.toHexString(), event.params.counterparty.toHexString()]);
+  preTrade.pool = pool.id;
+  preTrade.orderbook = orderbook.id;
+  preTrade.party = event.params.party.toHexString();
+  preTrade.counterparty = event.params.counterparty.toHexString();
+  preTrade.executionDate = event.params.tradeToReportDate;
+
+  preTrade.save();
+}
+
+/*export function handlePreTrades(event: tradeExecuted): void {
   let orderBook = event.address;
 
   //let poolContract = SecondaryIssuePool.bind(poolAddress);
@@ -636,15 +664,17 @@ export function handlePreTrades(event: tradeExecuted): void {
     pretrades.counterparty = event.params.counterparty.toHexString();
     pretrades.save();
   } 
-  /*else{
+  else{
+    pretrades.pool = event.params.pool.toHexString();
     pretrades.executionDate = event.params.tradeToReportDate;
     pretrades.party = event.params.party.toHexString();
     pretrades.counterparty = event.params.counterparty.toHexString();
     pretrades.save();
-  }*/
-}
+  }
+}*/
 
 export function handleTradeReport(event: TradeReport): void {
+  log.info("TradeReport is running", []);
   let poolAddress = event.address;
 
   let poolContract = SecondaryIssuePool.bind(poolAddress);
