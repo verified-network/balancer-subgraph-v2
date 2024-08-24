@@ -1053,6 +1053,7 @@ templates:
         - PoolShare
         - Swap
         - PoolToken
+        - Orderbook
       abis:
         - name: WeightedPool
           file: ./abis/WeightedPool.json

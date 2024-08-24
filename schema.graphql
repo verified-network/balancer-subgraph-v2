@@ -205,7 +205,8 @@ type SecondaryOrders @entity {
 
 type Orderbook @entity {
   id: ID!
-  secondaryPreTrades: [SecondaryPreTrades!]! @derivedFrom(field: "orderbook")
+  pool: Pool!
+  secondaryPreTrades: [SecondaryPreTrades!] @derivedFrom(field: "orderbook")
 }
 
 type SecondaryPreTrades @entity {
@@ -213,7 +214,7 @@ type SecondaryPreTrades @entity {
   pool: Pool!
   party: User 
   counterparty: User 
-  executionDate: BigInt!
+  executionDate: BigInt
   orderbook: Orderbook!
 }
 
