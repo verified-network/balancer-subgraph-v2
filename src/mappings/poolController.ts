@@ -27,6 +27,7 @@ import {
 import { PrimaryIssuePool, OpenIssue, Subscription } from '../types/templates/PrimaryIssuePool/PrimaryIssuePool';
 import { SecondaryIssuePool, Offer, TradeReport, OrderBook } from '../types/templates/SecondaryIssuePool/SecondaryIssuePool';
 import { MarginTradingPool, MarginOffer, MarginTradeReport, MarginOrderBook } from '../types/templates/MarginTradingPool/MarginTradingPool';
+import { Orderbook as OrderbookTemplate } from '../types/templates';
 import { tradeExecuted } from '../types/templates/OrderBook/Orderbook';
 import { OffchainSecondariesPool } from '../types/templates/OffchainSecondariesPool/OffchainSecondariesPool';
 import {
@@ -580,23 +581,26 @@ export function handleSubscription(event: Subscription): void {
   
   pool.security = event.params.security;
   pool.currency = event.params.currency;
-  pool.orderBook = event.params.orderBook.toHexString();
+  pool.orderBook = event.params.orderBook;
   pool.minOrderSize = event.params.minOrderSize;
   pool.issueManager = event.params.issueManager;
   log.info("Orderbook ", [event.params.orderBook.toHexString()]);
   pool.save();
 
-  let orderBook = Orderbook.load(event.params.orderBook.toHexString());
-  if(orderBook==null){
-    let providerId = getPoolTokenId(event.transaction.hash.toHexString(), event.params.security);
-    let orderBook = new Orderbook(providerId);  
-    orderBook.pool = poolId.toHexString();
-    orderBook.save();
+  OrderbookTemplate.create(event.params.orderBook);
+
+  let orderbook  = loadSecondaryPreTrades(event.transaction.hash.toHexString(), event.params.orderBook);
+  if (orderbook == null) {
+    let providerId = getPoolTokenId(event.transaction.hash.toHexString(), event.params.orderBook);
+    let orderbook = new Orderbook(providerId);  
+    orderbook.pool = poolId.toHexString();
+    orderbook.save();
   }
   else{
-    orderBook.pool = poolId.toHexString();
-    orderBook.save();
+    orderbook.pool = poolId.toHexString();
+    orderbook.save();
   }
+  
 }
 
 export function handleOrderBook(event: OrderBook): void {
@@ -635,62 +639,32 @@ export function handleOrderBook(event: OrderBook): void {
 
 export function handlePreTrades(event: tradeExecuted): void {
   log.info("handlePreTrades is running", []);
-  let pool = Pool.load(event.params.pool.toHexString());
-  if (pool == null) {
-    log.error("Pool is empty", [event.params.pool.toHexString()]);
-    return; // Handle error, pool not found
-  }
-
-  /*let poolAddress = event.params.pool;
-
-  let poolContract = SecondaryIssuePool.bind(poolAddress);
-  let poolIdCall = poolContract.try_getPoolId();
-  let poolId = poolIdCall.value;*/
-
-  let orderbook = Orderbook.load(event.address.toHexString());
-  if (orderbook == null) {
-    log.error("Orderbook is empty", [event.address.toHexString()]);
-    return; // Handle error, orderbook not found
-  }
-  
-  let preTradeId = event.transaction.hash.toHex() + "-" + event.logIndex.toString();
-  let preTrade = new SecondaryPreTrades(preTradeId);
-  log.info("Pretrade data",[event.params.party.toHexString(), event.params.counterparty.toHexString()]);
-  preTrade.pool = pool.id;
-  //preTrade.pool = poolId.toHexString();
-  preTrade.orderbook = orderbook.id;
-  preTrade.party = event.params.party.toHexString();
-  preTrade.counterparty = event.params.counterparty.toHexString();
-  preTrade.executionDate = event.params.tradeToReportDate;
-
-  preTrade.save();
-}
-
-/*export function handlePreTrades(event: tradeExecuted): void {
   let orderBook = event.address;
 
-  //let poolContract = SecondaryIssuePool.bind(poolAddress);
-  //let poolIdCall = poolContract.try_getPoolId();
-  //let poolId = poolIdCall.value;
+  let poolContract = SecondaryIssuePool.bind(event.params.pool);
+  let poolIdCall = poolContract.try_getPoolId();
+  let poolId = poolIdCall.value;
 
   let pretrades  = loadSecondaryPreTrades(event.transaction.hash.toHexString(), orderBook);
   if (pretrades == null) {
     let providerId = getPoolTokenId(event.transaction.hash.toHexString(), orderBook);
     let pretrades = new SecondaryPreTrades(providerId);   
-    pretrades.pool = event.params.pool.toHexString(); 
+    pretrades.pool = poolId.toHexString(); 
+    pretrades.orderbook = pretrades.id;
     pretrades.executionDate = event.params.tradeToReportDate;
     pretrades.party = event.params.party.toHexString();
     pretrades.counterparty = event.params.counterparty.toHexString();
     pretrades.save();
   } 
   else{
-    pretrades.pool = event.params.pool.toHexString();
+    pretrades.pool = poolId.toHexString(); 
+    pretrades.orderbook = pretrades.id;
     pretrades.executionDate = event.params.tradeToReportDate;
     pretrades.party = event.params.party.toHexString();
     pretrades.counterparty = event.params.counterparty.toHexString();
     pretrades.save();
   }
-}*/
+}
 
 export function handleTradeReport(event: TradeReport): void {
   log.info("TradeReport is running", []);
@@ -839,7 +813,7 @@ export function handleOffchainTradeReport(event: TradeReport): void {
   pool.margin = event.params.margin;
   pool.collateral = event.params.collateral;
   pool.cficode = event.params.CfiCode;
-  pool.orderBook = event.params.orderBook.toHexString();
+  pool.orderBook = event.params.orderBook;
   pool.minOrderSize = event.params.minOrderSize;
   pool.issueManager = event.params.issueManager;
   

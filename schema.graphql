@@ -153,7 +153,7 @@ type Pool @entity {
 
   # SecondaryPool and OffchainSecondariesPool only
   minOrderSize: BigInt
-  orderBook: Orderbook
+  orderBook: Bytes
   issueManager: Bytes
   secondaryTrades: [SecondaryTrades!] @derivedFrom(field: "pool")
   secondaryPreTrades: [SecondaryPreTrades!] @derivedFrom(field: "pool")

@@ -46,7 +46,6 @@ import { ManagedPool as ManagedPoolTemplate } from '../types/templates';
 import { LinearPool as LinearPoolTemplate } from '../types/templates';
 import { PrimaryIssuePool as PrimaryPoolTemplate } from '../types/templates';
 import { SecondaryIssuePool as SecondaryPoolTemplate } from '../types/templates';
-import { Orderbook as OrderbookTemplate } from '../types/templates';
 import { MarginTradingPool as MarginTradingPoolTemplate } from '../types/templates';
 import { OffchainSecondariesPool as OffchainSecondaryIssuePoolTemplate } from '../types/templates';
 import { Gyro2Pool as Gyro2PoolTemplate } from '../types/templates';
@@ -407,7 +406,7 @@ export function handleNewSecondaryPool(event: PoolCreated): void {
   pool.owner = balancerManager;
   pool.principalToken = security;
   pool.baseToken = currency;
-  pool.orderBook = orderBook.toHexString();
+  pool.orderBook = orderBook;
 
   let tokens = getPoolTokens(poolId);
   if (tokens == null) return;
@@ -418,8 +417,6 @@ export function handleNewSecondaryPool(event: PoolCreated): void {
   handleNewPoolTokens(pool, tokens);
 
   SecondaryPoolTemplate.create(poolAddress);
-
-  OrderbookTemplate.create(poolAddress);
 }
 
 export function handleNewMarginPool(event: PoolCreated): void {
@@ -459,7 +456,7 @@ export function handleNewMarginPool(event: PoolCreated): void {
   pool.margin = margin;
   pool.collateral = collateral;
   pool.baseToken = currency;
-  pool.orderBook = orderBook.toHexString();
+  pool.orderBook = orderBook;
 
   let tokens = getPoolTokens(poolId);
   if (tokens == null) return;
@@ -501,7 +498,7 @@ export function handleNewOffchainSecondaryPool(event: PoolCreated): void {
   pool.owner = balancerManager;
   pool.principalToken = security;
   pool.baseToken = currency;
-  pool.orderBook = orderBook.toHexString();
+  pool.orderBook = orderBook;
 
   let tokens = getPoolTokens(poolId);
   if (tokens == null) return;
